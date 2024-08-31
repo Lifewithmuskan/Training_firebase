@@ -1,17 +1,24 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const session = require('express-session');
-const user = require('./models/user'); // Ensure this path is correct
-const mongoose = require('./db'); // Import the mongoose connection setup from db.js
+import express from 'express';
+import bodyParser from 'body-parser';
+import session from 'express-session';
+import { 
+    auth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    db, 
+    collection, 
+    addDoc 
+} from './firebase.js'; // Import Firebase functions
 
 const app = express();
 
+// Setup view engine and views directory
 app.set('view engine', 'ejs');
-app.set('views', './views'); // Optional if 'views' is in the root directory
+app.set('views', './views');
 
+// Middleware setup
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(session({
     secret: 'your-secret-key',
     resave: false,
@@ -20,40 +27,70 @@ app.use(session({
 
 // Route for the home page
 app.get('/', (req, res) => {
-    res.render('test'); // Renders views/test.ejs
+    res.render('test', { message: req.session.message });
+    req.session.message = null; // Clear message after displaying
 });
 
 // Route for the item page
 app.get('/item', (req, res) => {
-    res.render('item'); // Renders views/item.ejs
+    res.render('item');
 });
 
 // Route to handle user creation
 app.post('/user', async (req, res) => {
+    const { first_name, last_name, email, education, department, position, password } = req.body;
+
+    if (!first_name || !last_name || !email || !education || !department || !position || !password) {
+        req.session.message = {
+            type: 'danger',
+            message: "All fields are required."
+        };
+        return res.redirect('/');
+    }
+
     try {
-        const newUser = new user({
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
-            email: req.body.email,
-            education: req.body.education,
-            department: req.body.department,
-            position: req.body.position,
+        // Create a new user with Firebase Authentication
+        await createUserWithEmailAndPassword(auth, email, password);
+
+        // Store additional user information in Firestore
+        const usersCollection = collection(db, "users");
+        await addDoc(usersCollection, {
+            first_name,
+            last_name,
+            email,
+            education,
+            department,
+            position
         });
 
-        // Attempt to save the new user to the database
-        await newUser.save();
-
-        // Store a success message in the session
         req.session.message = {
             type: 'success',
             message: "Account created successfully!"
         };
-        
-        // Redirect to the item page
         res.redirect('/item');
     } catch (err) {
         console.error('Error creating user:', err.message);
-        res.status(500).json({ message: "Internal server error", type: 'danger' });
+
+        let errorMessage;
+        switch (err.code) {
+            case 'auth/email-already-in-use':
+                errorMessage = "Email is already in use. Please use a different email address.";
+                break;
+            case 'auth/invalid-email':
+                errorMessage = "Invalid email format. Please enter a valid email address.";
+                break;
+            case 'auth/weak-password':
+                errorMessage = "Password is too weak. Please choose a stronger password.";
+                break;
+            default:
+                errorMessage = "Error creating account. Please try again.";
+        }
+
+        req.session.message = {
+            type: 'danger',
+            message: errorMessage
+        };
+        res.redirect('/');
     }
 });
 
@@ -61,26 +98,45 @@ app.post('/user', async (req, res) => {
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    try {
-        const userData = await user.findOne({ email });
+    if (!email || !password) {
+        req.session.message = {
+            type: 'danger',
+            message: "Email and password are required."
+        };
+        return res.redirect('/');
+    }
 
-        // Check if user exists and password matches the first_name
-        if (userData && userData.first_name === password) {
-            req.session.message = {
-                type: 'success',
-                message: "Login successful!"
-            };
-            res.redirect('/item');
-        } else {
-            req.session.message = {
-                type: 'danger',
-                message: "Invalid email or password."
-            };
-            res.redirect('/');
-        }
+    try {
+        // Sign in user with Firebase Authentication
+        await signInWithEmailAndPassword(auth, email, password);
+        req.session.message = {
+            type: 'success',
+            message: "Login successful!"
+        };
+        res.redirect('/item');
     } catch (err) {
         console.error('Error during login:', err.message);
-        res.status(500).json({ message: "Internal server error", type: 'danger' });
+
+        let errorMessage;
+        switch (err.code) {
+            case 'auth/user-not-found':
+                errorMessage = "User not found. Please check your email.";
+                break;
+            case 'auth/wrong-password':
+                errorMessage = "Incorrect password. Please try again.";
+                break;
+            case 'auth/invalid-email':
+                errorMessage = "Invalid email format. Please enter a valid email address.";
+                break;
+            default:
+                errorMessage = "Error during login. Please try again.";
+        }
+
+        req.session.message = {
+            type: 'danger',
+            message: errorMessage
+        };
+        res.redirect('/');
     }
 });
 

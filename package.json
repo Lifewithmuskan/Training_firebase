@@ -2,6 +2,7 @@
   "name": "day1",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,8 +15,12 @@
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
+    "firebase": "^10.13.1",
     "mongodb": "^6.8.0",
-    "mongoose": "^8.5.4",
+    "mongoose": "^8.5.5",
     "session": "^0.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
