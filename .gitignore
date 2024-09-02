@@ -17,7 +17,7 @@ build/
 
 # Compiled files
 *.class
-*.js
+
 *.map
 
 # Firebase configuration files
