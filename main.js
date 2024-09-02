@@ -8,15 +8,15 @@ import {
     db, 
     collection, 
     addDoc 
-} from './firebase.js'; // Import Firebase functions
+} from './firebase.js'; 
 
 const app = express();
 
-// Setup view engine and views directory
+
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
-// Middleware setup
+
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
@@ -25,18 +25,18 @@ app.use(session({
     saveUninitialized: true
 }));
 
-// Route for the home page
+
 app.get('/', (req, res) => {
     res.render('test', { message: req.session.message });
-    req.session.message = null; // Clear message after displaying
+    req.session.message = null; 
 });
 
-// Route for the item page
+
 app.get('/item', (req, res) => {
     res.render('item');
 });
 
-// Route to handle user creation
+
 app.post('/user', async (req, res) => {
     const { first_name, last_name, email, education, department, position, password } = req.body;
 
@@ -49,10 +49,10 @@ app.post('/user', async (req, res) => {
     }
 
     try {
-        // Create a new user with Firebase Authentication
+       
         await createUserWithEmailAndPassword(auth, email, password);
 
-        // Store additional user information in Firestore
+        
         const usersCollection = collection(db, "users");
         await addDoc(usersCollection, {
             first_name,
@@ -67,6 +67,7 @@ app.post('/user', async (req, res) => {
             type: 'success',
             message: "Account created successfully!"
         };
+        console.log('Redirecting to /item');  // Add this line
         res.redirect('/item');
     } catch (err) {
         console.error('Error creating user:', err.message);
@@ -94,7 +95,7 @@ app.post('/user', async (req, res) => {
     }
 });
 
-// Route to handle user login
+
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -107,7 +108,7 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        // Sign in user with Firebase Authentication
+        
         await signInWithEmailAndPassword(auth, email, password);
         req.session.message = {
             type: 'success',
@@ -140,7 +141,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Start the server
+
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
