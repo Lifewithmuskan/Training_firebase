@@ -1,26 +1,31 @@
 {
   "name": "day1",
   "version": "1.0.0",
-  "description": "",
+  "description": "A Node.js project with Express, Firebase, MongoDB, and Mongoose",
   "type": "module",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon main.js",
+    "test": "jest"
   },
   "keywords": [],
-  "author": "",
+  "author": "Muskaan Singh",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
-    "firebase": "^10.13.1",
+    "firebase": "^10.13.0",
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.5",
     "session": "^0.1.0"
   },
   "devDependencies": {
-    "jest": "^29.7.0"
+    "jest": "^29.6.1",
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
