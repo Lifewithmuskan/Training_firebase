@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Test</title>
+    <link rel="stylesheet" href="/css/create-test.css">
+</head>
+<body>
+    <!-- Test Info Container -->
+    <div id="test-info-container">
+        <h2>Create New Test</h2>
+        <form id="test-info-form">
+            <label for="test-topic">Test Topic:</label>
+            <input type="text" id="test-topic" name="test_topic" required>
+
+            <label for="test-sub-topic">Test Sub-Topic:</label>
+            <input type="text" id="test-sub-topic" name="test_sub_topic" required>
+
+            <label for="test-time">Test Duration (minutes):</label>
+            <input type="number" id="test-time" name="test_time" required>
+
+            <label for="number-of-questions">Number of Questions:</label>
+            <input type="number" id="number-of-questions" name="number_of_questions" required>
+
+            <button type="button" id="make-test" class="action-button">Generate Test</button>
+        </form>
+    </div>
+
+    <!-- Questions Container -->
+    <div id="questions-container" class="question-container hidden">
+        <h2>Questions</h2>
+        <form id="questions-form" action="/save-test" method="POST">
+            <!-- Hidden inputs for test info -->
+            <input type="hidden" id="hidden-topic" name="test_topic">
+            <input type="hidden" id="hidden-sub-topic" name="test_sub_topic">
+            <input type="hidden" id="hidden-time" name="test_time">
+            <input type="hidden" id="hidden-questions-count" name="number_of_questions">
+
+            <!-- Dynamically added questions will appear here -->
+            <div id="questions-list"></div>
+            
+            <!-- Add new question button -->
+            <button type="button" id="add-new-question" class="action-button">Add New Question</button>
+            
+            <!-- Preview and Save Buttons -->
+            <button type="button" id="preview-test" class="action-button">Preview</button>
+            <button type="submit" id="save-test" class="action-button">Save Test</button>
+        </form>
+    </div>
+
+  
+    <!-- Preview Modal -->
+<div id="preview-modal" class="modal">
+    <div id="preview-content" class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Test Preview</h2>
+        <!-- The dynamic content will be added here -->
+    </div>
+</div>
+
+
+    <script src="/js/create-test.js"></script>
+</body>
+</html>

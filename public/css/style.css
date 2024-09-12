@@ -1,0 +1,268 @@
+body{
+    cursor: pointer;
+    background-color: cornflowerblue;
+    margin: 0%;
+}
+
+.navbar {
+  background-color: #333;
+  color: #fff;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 0 12px #0003;
+  width: 100%;
+  max-width: 76rem;
+}
+
+.navbar-left .logo img {
+  height: 40px; /* Adjust as needed */
+}
+
+.navbar-right {
+  display: flex;
+  gap: 20px;
+}
+
+.navbar-right a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.5rem;
+}
+
+.navbar-right a:hover {
+  text-decoration: underline;
+}
+
+.heading {
+    font-family: system-ui, sans-serif;
+    font-size: 5rem;
+    text-align: center;
+    margin-bottom: 0;
+   
+}
+  .sub_heading{
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    font-size: 3rem;
+    margin-top: 0;
+    margin-bottom: 6rem;
+  }
+
+  .clickable-span {
+    cursor: pointer;
+    color:black;
+}
+
+.clickable-span:hover {
+    text-decoration: none; /* Optionally remove underline on hover */
+}
+
+/* Dropdown Styles */
+.dropdown {
+  position: relative;
+}
+
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  background-color: #444;
+  border-radius: 0.5rem;
+  top: 100%;
+  right: 0;
+  padding: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.dropdown-menu a {
+  color: #fff;
+  text-decoration: none;
+  display: block;
+  padding: 10px;
+  font-size: 1.2rem;
+}
+
+.dropdown-menu a:hover {
+  background-color: #555;
+}
+
+/* Show dropdown on hover */
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+/* Show dropdown on click */
+.dropdown .dropdown-toggle:focus + .dropdown-menu {
+  display: block;
+}
+  nav {
+    position: sticky;
+    margin: auto;
+    width: 90%;
+    max-width: 50rem;
+    height: 3.5rem;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    margin-bottom: 4rem;
+    gap: 6.5rem;
+    
+    border-radius: 1.6rem;
+    background-color: #fff;
+    transition: all 0.3s;
+    will-change: background-color, box-shadow, backdrop-filter;
+    
+    &.highlight {
+      box-shadow: 0 0 12px #0003;
+      background-color: #fff2;
+      backdrop-filter: blur(10px);
+      font-weight: 500;
+    }
+     }
+
+     .intro{
+      border-radius: 1.6rem;
+      background-color: #fff;
+      width: 90%;
+      max-width: 60rem;
+      height: 20.5rem;
+      margin: auto;
+      margin-bottom: 8rem;
+     }
+
+     .intro_p{
+      text-align: center;
+      padding-top: 5rem;
+      padding-left: 2rem;
+      padding-right: 2rem;
+     }
+
+     .photo_div {
+      border-radius: 1.6rem;
+      background-color: #fff;
+      width: 90%;
+      max-width: 60rem;
+      height: 34rem;
+      margin-top: 20px;
+      margin-left: auto;
+      margin-right: auto;
+
+      font-family: "Poppins", sans-serif;
+      font-weight: 500;
+      color: #fff;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-auto-rows: minmax(80px, auto);
+      gap: 0.5rem; 
+      margin-bottom: 5rem;
+    }
+   .photo_div div{
+   
+          &:hover {
+        scale: 1.4;
+      }
+   }
+   .image-wrapper{
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: 1.6rem;
+ 
+   }
+    
+    .card1 {
+      background-color: aquamarine;
+      border-radius: 1.6rem;
+      grid-column: 1/6;
+      grid-row: 1/4;
+    }
+    
+    .card2 {
+      background-color: darkolivegreen;
+      border-radius: 1.6rem;
+      grid-column: 6/9;
+      grid-row: 1/4;
+    }
+    
+    .card3 {
+      background-color: deeppink;
+      border-radius: 1.6rem;
+      grid-column: 1/4;
+      grid-row: 4/7;
+    }
+    
+    .card4 {
+      background-color: lightcoral;
+      border-radius: 1.6rem;
+      grid-column: 4/9;
+      grid-row: 4/7;
+    }
+    
+
+  
+  .footer {
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      margin-top: 10px;
+  }
+  
+  .footer h2 {
+      margin-top: 0;
+      font-size: 1.5rem;
+  }
+  
+  .footer .subscribeNewslettersBlock {
+      margin-bottom: 10px;
+  }
+  
+  .footer .connectUs {
+      margin-bottom: 20px;
+  }
+  
+  .socialLinks {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+  }
+  
+  .socialLinks li a {
+      color: #fff;
+      font-size: 1.5rem;
+      text-decoration: none;
+  }
+  
+  .socialLinks li a i {
+      font-size: 1.5rem;
+  }
+  
+  .impoLinks {
+      margin-top: 20px;
+  }
+  
+  .footerMenuLinks {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+  }
+  
+  .footerMenuLinks li a {
+      color: #fff;
+      text-decoration: none;
+  }
+  
+  .footerMenuLinks li a:hover {
+      text-decoration: underline;
+  }
+  

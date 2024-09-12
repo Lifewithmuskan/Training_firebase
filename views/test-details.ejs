@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Details</title>
+    <script src="/js/test-details.js"></script>
+</head>
+<body>
+    <section id="email-section">
+        <h3>Please enter your email:</h3>
+        <form id="email-form">
+            <input type="email" id="email" name="email" required>
+            <button type="submit">Save Email</button>
+        </form>
+    </section>
+
+    <section id="questions-section" style="display:none;">
+        <h2>Test Questions</h2>
+        <form id="test-form" data-test-id="<%= testId %>">
+            <% testContent.questions.forEach((question, index) => { %>
+                <fieldset>
+                    <legend><%= question.question %></legend>
+                    <% question.options.forEach((option, optionIndex) => { %>
+                        <label>
+                            <input type="radio" name="answers[<%= index %>]" value="<%= option %>" required>
+                            <%= option %>
+                        </label>
+                    <% }) %>
+                </fieldset>
+            <% }) %>
+            <input type="hidden" name="testId" value="<%= testId %>"> <!-- Ensure testId is included -->
+            <button type="submit">Submit Test</button>
+        </form>
+    </section>
+</body>
+</html>

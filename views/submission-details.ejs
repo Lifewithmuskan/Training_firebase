@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Details</title>
+    <link rel="stylesheet" href="/css/upcoming.css">
+</head>
+<body>
+    <header class="navbar">
+        <nav class="navbar">
+            <div class="navbar-left">
+                <a href="/" class="logo"><img src="/images/drdo_logo.png" alt="Logo"></a>
+            </div>
+            <div class="navbar-right">
+                <a href="#about">About</a>
+                <a href="#photos">Photos</a>
+                <a href="#contact">Contact Us</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="heading">Submission Details</h1>
+        <h2 class="sub_heading">Details of the test submission</h2>
+
+        <table>
+            <tr>
+                <th>Test Name:</th>
+                <td><%= test.test_topic %></td>
+            </tr>
+            <tr>
+                <th>Email:</th>
+                <td><%= submission.email %></td>
+            </tr>
+            <tr>
+                <th>Submission Time:</th>
+                <td><%= new Date(submission.submittedAt.toDate()).toLocaleString() %></td>
+            </tr>
+            <tr>
+                <th>Answers:</th>
+                <td>
+                    <% Object.keys(submission.answers).forEach((key) => { %>
+                        <p>Question <%= parseInt(key) + 1 %>: <%= submission.answers[key] %></p>
+                    <% }) %>
+                </td>
+            </tr>
+        </table>
+
+        <h3>Test Questions and Correct Answers</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Question</th>
+                    <th>Options</th>
+                    <th>Correct Answer</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% test.questions.forEach((question, index) => { %>
+                    <tr>
+                        <td><%= question.question %></td>
+                        <td>
+                            <% question.options.forEach((option, optionIndex) => { %>
+                                <p><%= option %></p>
+                            <% }) %>
+                        </td>
+                        <td><%= question.correct_answer %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <footer class="footer">
+        <h2>Stay Updated</h2>
+        <div class="subscribeNewslettersBlock">Subscribe to our newsletter for the latest updates.</div>
+        <div class="connectUs">Follow us on social media:</div>
+        <ul class="socialLinks">
+            <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+            <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+            <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+        </ul>
+        <div class="impoLinks">Important Links:</div>
+        <ul class="footerMenuLinks">
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Support</a></li>
+        </ul>
+    </footer>
+</body>
+</html>

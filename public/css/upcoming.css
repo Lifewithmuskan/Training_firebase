@@ -1,0 +1,265 @@
+/* General Styles */
+body {
+    cursor: pointer;
+    background-color: cornflowerblue;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 0 12px #0003;
+    width: 100%;
+    max-width: 76rem;
+    margin: auto;
+    border-radius: 1.6rem;
+}
+
+.navbar-left .logo img {
+    height: 40px;
+}
+
+.navbar-right {
+    display: flex;
+    gap: 20px;
+}
+
+.navbar-right a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.5rem;
+}
+
+.navbar-right a:hover {
+    text-decoration: underline;
+}
+
+/* Main Container */
+.container {
+    width: 90%;
+    max-width: 60rem;
+    margin: auto;
+    margin-top: 4rem;
+    padding-bottom: 4rem;
+}
+
+/* Page Headings */
+.heading {
+    font-size: 5rem;
+    text-align: center;
+    margin-bottom: 0;
+    color: #fff;
+}
+
+.sub_heading {
+    text-align: center;
+    font-size: 3rem;
+    margin-top: 0;
+    margin-bottom: 6rem;
+    color: #fff;
+}
+
+/* Test Cards */
+.test-card {
+    background-color: #fff;
+    border-radius: 1.6rem;
+    box-shadow: 0 0 12px #0003;
+    margin: 20px 0;
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.test-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Test Card Title */
+.test-card .test-title {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* Test Card Details */
+.test-card .test-details {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.5;
+}
+
+/* Buttons */
+.button {
+    background-color: #0077b6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    font-size: 1rem;
+}
+
+.button:hover {
+    background-color: #005f86;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 0 12px #0003;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 1.6rem;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-family: 'Poppins', sans-serif;
+}
+
+th {
+    background-color: #444;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+td {
+    font-size: 1rem;
+    color: #333;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Footer */
+.footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 1.6rem;
+}
+
+.footer h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+.subscribeNewslettersBlock {
+    margin-bottom: 10px;
+}
+
+.connectUs {
+    margin-bottom: 20px;
+}
+
+.socialLinks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.socialLinks li a {
+    color: #fff;
+    font-size: 1.5rem;
+    text-decoration: none;
+}
+
+.impoLinks {
+    margin-top: 20px;
+}
+
+.footerMenuLinks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.footerMenuLinks li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.footerMenuLinks li a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+    }
+
+    .navbar-right {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .container {
+        width: 95%;
+        margin-top: 2rem;
+    }
+
+    .heading {
+        font-size: 3rem;
+    }
+
+    .sub_heading {
+        font-size: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .test-card {
+        padding: 15px;
+    }
+
+    .test-card .test-title {
+        font-size: 1.2rem;
+    }
+
+    .test-card .test-details {
+        font-size: 0.9rem;
+    }
+
+    .button {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .footer {
+        padding: 15px;
+    }
+
+    .footer h2 {
+        font-size: 1.2rem;
+    }
+}

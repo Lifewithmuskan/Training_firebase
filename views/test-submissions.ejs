@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Submissions</title>
+    <link rel="stylesheet" href="/css/upcoming.css">
+</head>
+<body>
+    <header class="navbar">
+        <nav class="navbar">
+            <div class="navbar-left">
+                <a href="/" class="logo"><img src="/images/drdo_logo.png" alt="Logo"></a>
+            </div>
+            <div class="navbar-right">
+                <a href="#about">About</a>
+                <a href="#photos">Photos</a>
+                <a href="#contact">Contact Us</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="heading">Test Submissions</h1>
+        <h2 class="sub_heading">Review the submitted tests</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Test Name</th>
+                    <th>Email</th>
+                    <th>Submission Time</th>
+                    <th>View Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% submissions.forEach(submission => { %>
+                    <tr onclick="window.location.href='/submission-details/<%= submission.id %>'">
+                        <td><%= submission.testName %></td>
+                        <td><%= submission.email %></td>
+                        <td><%= new Date(submission.submittedAt.toDate()).toLocaleString() %></td>
+                        <td><a href="/submission-details/<%= submission.id %>">View</a></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <footer class="footer">
+        <h2>Stay Updated</h2>
+        <div class="subscribeNewslettersBlock">Subscribe to our newsletter for the latest updates.</div>
+        <div class="connectUs">Follow us on social media:</div>
+        <ul class="socialLinks">
+            <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+            <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+            <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+        </ul>
+        <div class="impoLinks">Important Links:</div>
+        <ul class="footerMenuLinks">
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Support</a></li>
+        </ul>
+    </footer>
+</body>
+</html>

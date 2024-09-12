@@ -1,0 +1,22 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Score Page</title>
+    <link rel="stylesheet" href="/css/style.css"> <!-- Link to your stylesheet -->
+</head>
+<body>
+    <h1>Test Submission Details</h1>
+    <p>Email: <%= submission.email %></p>
+    <p>Submitted At: <%= submission.submittedAt.toDate().toLocaleString() %></p>
+    <h2>Answers:</h2>
+    <ul>
+        <% for (const [question, answer] of Object.entries(submission.answers)) { %>
+            <li><strong><%= question %>:</strong> <%= answer %></li>
+        <% } %>
+    </ul>
+    <a href="/home">Go back to home</a>
+</body>
+</html>

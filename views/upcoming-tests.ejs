@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upcoming Tests</title>
+    <link rel="stylesheet" href="/css/upcoming.css">
+</head>
+<body>
+    <header class="navbar">
+        <nav class="navbar">
+            <div class="navbar-left">
+                <a href="/" class="logo"><img src="/images/drdo_logo.png" alt="Logo"></a>
+            </div>
+            <div class="navbar-right">
+                <a href="#about">About</a>
+                <a href="#photos">Photos</a>
+                <a href="#contact">Contact Us</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="heading">Upcoming Tests</h1>
+        <h2 class="sub_heading">Stay prepared for your future assessments</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Test Name</th>
+                    <th>Sub-Topic</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+         
+
+            <tbody>
+                <% tests.forEach(test => { %>
+                    <tr onclick="window.location.href='/test-details/<%= test.id %>'">
+
+                        <td><%= test.test_topic %></td>
+                        <td><%= test.test_sub_topic %></td>
+                        <td><%= test.test_time %> minutes</td>
+                    </tr>
+                <% }) %>
+            </tbody>
+            
+        </table>
+    </div>
+
+    <footer class="footer">
+        <h2>Stay Updated</h2>
+        <div class="subscribeNewslettersBlock">Subscribe to our newsletter for the latest updates.</div>
+        <div class="connectUs">Follow us on social media:</div>
+        <ul class="socialLinks">
+            <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+            <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+            <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+        </ul>
+        <div class="impoLinks">Important Links:</div>
+        <ul class="footerMenuLinks">
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Support</a></li>
+        </ul>
+    </footer>
+</body>
+</html>
