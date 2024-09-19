@@ -3,24 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Selection</title>
+    <title>Training Need Analysis</title>
     <link rel="stylesheet" href="/css/test.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <!-- Buttons for form selection -->
-        <div class="options">
-            <button id="create-account">Create Account</button>
-            <button id="existing-user">Existing User</button>
+        <section class="intro-section">
+            <div class="intro-text">
+                <p class="intro_p">
+                    Welcome to our testing platform, designed to help you discover the most suitable training programs to enhance your skills and capabilities. We believe that personal growth not only transforms individuals but also elevates our society as a whole. By identifying the right training tailored to your needs, you can achieve your full potential and contribute positively to your community.
+                </p>
+                <p class="intro_p">
+                    Our aim is to empower you with the insights needed to choose the most impactful training, ensuring that your efforts translate into meaningful progress for both yourself and those around you. We are committed to supporting you in making informed decisions that will not only advance your career but also drive positive change in your community.
+                </p>
+            </div>
+            <div class="intro-image">
+                <img src="/public/css/image/drdo.jpg" alt="DRDO Training" class="drdo-image">
+            </div>
+        </section>
+        
+        <div class="main-container">
+            <h1 class="main_heading">TRAINING NEED ANALYSIS</h1>
+            <div class="role-selection">
+                <button id="user-selection" class="btn">USER</button>
+                <button id="admin-selection" class="btn">ADMIN</button>
+            </div>
         </div>
 
-        <!-- Container where forms will be inserted -->
+        <div class="options" style="display: none;">
+            <button id="create-account" class="btn">Create Account</button>
+            <button id="existing-user" class="btn">Existing User</button>
+        </div>
+
         <div id="form-container" class="form-container">
             <!-- Form content will be inserted here -->
         </div>
     </div>
 
     <script src="/js/test.js"></script>
-    <script type="module" src="/main.js"></script>
 </body>
 </html>

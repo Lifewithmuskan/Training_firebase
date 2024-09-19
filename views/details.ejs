@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Details</title>
+    <link rel="stylesheet" href="/css/details.css">
+</head>
+<body>
+    <div class="top-buttons">
+        <a href="/home" class="button">Home</a>
+        <a href="/allotted-tests" class="button">View Allotted Tests</a>
+    </div>
+
+    <div class="container">
+        <h1 class="heading">Test Details</h1>
+
+        <% if (test) { %>
+            <h2 class="sub_heading"><%= test.test_topic %></h2>
+            <p><strong>Sub-topic:</strong> <%= test.test_sub_topic %></p>
+            <p><strong>Created At:</strong> <%= creatingTime ? new Date(creatingTime).toLocaleString() : 'N/A' %></p>
+            
+            <!-- List all email IDs -->
+            <h3>Assigned Users:</h3>
+            <% if (emails && emails.length > 0) { %>
+                <ul>
+                    <% emails.forEach(email => { %>
+                        <li><%= email %></li>
+                    <% }) %>
+                </ul>
+            <% } else { %>
+                <p>No emails assigned to this test.</p>
+            <% } %>
+        <% } else { %>
+            <p>No details available for this test.</p>
+        <% } %>
+    </div>
+</body>
+</html>

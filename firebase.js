@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, collection, addDoc, getDocs, query, where, doc, getDoc ,limit, orderBy} from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, query, where, doc, getDoc ,limit, orderBy,    updateDoc,
+  setDoc} from "firebase/firestore";
 import { getDatabase, ref, set, get } from "firebase/database";
 import dotenv from 'dotenv';
 
@@ -48,5 +49,6 @@ export {
   doc,
   getDoc,
   set,
-  get
+  get,updateDoc,
+  setDoc
 };

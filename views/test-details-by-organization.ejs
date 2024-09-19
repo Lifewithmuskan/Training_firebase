@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tests Grouped by Time and ID</title>
+</head>
+<body>
+    <h1>Tests Grouped by Time and ID</h1>
+    <% if (groupedTests.length > 0) { %>
+        <% groupedTests.forEach(group => { %>
+            <h2>Test ID: <%= group.testId %> | Time: <%= group.test_time %></h2>
+            <ul>
+                <% group.tests.forEach(test => { %>
+                    <li>
+                        <strong>Test Name:</strong> <%= test.testName %> <br>
+                        <strong>Description:</strong> <%= test.description %> <br>
+                        <strong>Questions:</strong>
+                        <ul>
+                            <% test.questions.forEach(question => { %>
+                                <li><%= question %></li>
+                            <% }); %>
+                        </ul>
+                    </li>
+                <% }); %>
+            </ul>
+        <% }); %>
+    <% } else { %>
+        <p>No tests available.</p>
+    <% } %>
+</body>
+</html>

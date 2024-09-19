@@ -1,66 +1,71 @@
+/* General Styles */
 body {
     cursor: pointer;
-    background-color: cornflowerblue;
+    background: linear-gradient(135deg, #0056b3, #00308f); /* Gradient background */
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif; /* Font family from reference */
+    color: #333; /* Default text color */
 }
 
-.navbar {
-    background-color: #333;
-    color: #fff;
-    padding: 10px 20px;
+/* Top Buttons */
+.top-buttons {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 0 12px #0003;
-    width: 100%;
-    max-width: 76rem;
-    border-radius: 1.6rem;
+    justify-content: flex-start; /* Align buttons to the start */
+    gap: 1rem; /* Spacing between buttons */
+    padding: 0.5rem 1rem;
+    background-color: #f8f9fa; /* Light background */
+    border-bottom: 1px solid #e0e0e0; /* Border color */
+    margin-bottom: 1rem; /* Space below the top buttons */
 }
 
-.navbar-left .clickable-span img {
-    height: 40px;
-}
-
-.navbar-right {
-    display: flex;
-    gap: 20px;
-}
-
-.navbar-right a {
-    color: #fff;
+.button {
+    background-color: #0056b3; /* Button background color */
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
     text-decoration: none;
-    font-size: 1.5rem;
-}
-
-.navbar-right a:hover {
-    text-decoration: underline;
-}
-
-.heading {
-    font-family: system-ui, sans-serif;
-    font-size: 5rem;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.3s;
+    font-weight: 600;
     text-align: center;
-    margin-bottom: 0;
+    display: inline-block;
+}
+
+.button:hover {
+    background-color: #003d82; /* Darker shade on hover */
+    transform: translateY(-2px);
+}
+
+/* Container */
+.container {
+    width: 90%;
+    max-width: 60rem;
+    margin: 2rem auto; /* Center container and add vertical margins */
+    background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
+    border-radius: 1rem; /* Rounded corners */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Shadow effect */
+    padding: 2rem;
+}
+
+/* Headings */
+.heading {
+    font-size: 2.5rem; /* Main heading size */
+    text-align: center;
+    margin-bottom: 0.5rem;
+    color: #0056b3; /* Heading color */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Shadow effect */
 }
 
 .sub_heading {
-    font-family: system-ui, sans-serif;
     text-align: center;
-    font-size: 3rem;
+    font-size: 1.25rem; /* Sub-heading size */
     margin-top: 0;
-    margin-bottom: 6rem;
+    margin-bottom: 1.5rem;
+    color: #555; /* Sub-heading color */
 }
 
-.test-details {
-    margin: 3rem auto;
-    max-width: 60rem;
-    background-color: #fff;
-    padding: 2rem;
-    border-radius: 1.6rem;
-    box-shadow: 0 0 12px #0003;
-}
-
+/* List Styles */
 ul {
     list-style: none;
     padding: 0;
@@ -68,18 +73,17 @@ ul {
 
 ul li {
     margin-bottom: 1.2rem;
+    font-size: 1rem; /* Font size for list items */
 }
 
-h2, h3 {
-    margin-bottom: 1.5rem;
-}
-
+/* Footer */
 .footer {
     background-color: #333;
     color: #fff;
     text-align: center;
     padding: 10px;
-    margin-top: 10px;
+    margin-top: 1rem; /* Space above the footer */
+    border-radius: 1rem; /* Rounded corners */
 }
 
 .footer h2 {
@@ -104,4 +108,26 @@ h2, h3 {
 
 .footerMenuLinks li a:hover {
     text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        margin-top: 2rem;
+    }
+
+    .heading {
+        font-size: 2rem;
+    }
+
+    .sub_heading {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    .button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
 }

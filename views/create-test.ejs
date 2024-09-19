@@ -17,6 +17,10 @@
             <label for="test-sub-topic">Test Sub-Topic:</label>
             <input type="text" id="test-sub-topic" name="test_sub_topic" required>
 
+            <!-- Added Test Date -->
+            <label for="test-date">Test Date:</label>
+            <input type="date" id="test-date" name="test_date" required>
+
             <label for="test-time">Test Duration (minutes):</label>
             <input type="number" id="test-time" name="test_time" required>
 
@@ -36,6 +40,7 @@
             <input type="hidden" id="hidden-sub-topic" name="test_sub_topic">
             <input type="hidden" id="hidden-time" name="test_time">
             <input type="hidden" id="hidden-questions-count" name="number_of_questions">
+            <input type="hidden" id="hidden-date" name="test_date"> <!-- Added hidden date -->
 
             <!-- Dynamically added questions will appear here -->
             <div id="questions-list"></div>
@@ -49,16 +54,14 @@
         </form>
     </div>
 
-  
     <!-- Preview Modal -->
-<div id="preview-modal" class="modal">
-    <div id="preview-content" class="modal-content">
-        <span class="close-button">&times;</span>
-        <h2>Test Preview</h2>
-        <!-- The dynamic content will be added here -->
+    <div id="preview-modal" class="modal">
+        <div id="preview-content" class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Test Preview</h2>
+            <!-- The dynamic content will be added here -->
+        </div>
     </div>
-</div>
-
 
     <script src="/js/create-test.js"></script>
 </body>

@@ -13,7 +13,7 @@ import {
     getDoc,
     doc,
     query,
-    where,
+    where,setDoc,
 } from './firebase.js';
 
 const app = express();
@@ -43,8 +43,10 @@ app.get('/home', (req, res) => {
     res.render('index', {
         first_name: req.session.first_name || "Guest",
         last_name: req.session.last_name || "",
+        isAdmin: req.session.isAdmin || false // Pass isAdmin value
     });
 });
+
 
 // Fetch upcoming tests
 app.get('/upcoming-tests', async (req, res) => {
@@ -61,19 +63,30 @@ app.get('/upcoming-tests', async (req, res) => {
 });
 
 // Fetch and display test submissions
+
+
 app.get('/test-submissions', async (req, res) => {
     try {
         const submissionsCollection = collection(db, "test_submissions");
-        const submissionsSnapshot = await getDocs(submissionsCollection);
-        const submissions = submissionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        let submissionsSnapshot;
 
+        if (req.session.isAdmin) {
+            // Admin: Fetch all test submissions
+            submissionsSnapshot = await getDocs(submissionsCollection);
+        } else {
+            // Regular user: Fetch only their own submissions
+            const userEmail = req.session.email;
+            const q = query(submissionsCollection, where("email", "==", userEmail));
+            submissionsSnapshot = await getDocs(q);
+        }
+
+        const submissions = submissionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         res.render('test-submissions', { submissions });
     } catch (err) {
         console.error('Error fetching submissions:', err.message);
         res.render('test-submissions', { submissions: [] });
     }
 });
-
 
 
 app.get('/submission-details/:id', async (req, res) => {
@@ -298,7 +311,21 @@ app.post('/login', async (req, res) => {
     }
 
     try {
+        // Check if user is the admin
+        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+            // Set session for admin
+            req.session.isAdmin = true;
+            req.session.first_name = "Admin";
+            req.session.last_name = "";
+
+            req.session.message = { type: 'success', message: "Welcome Admin!" };
+            return res.redirect('/home'); // Redirect to admin dashboard
+        }
+
+        // For regular users, sign in using Firebase Authentication
         await signInWithEmailAndPassword(auth, email, password);
+
+        // Query Firestore for the user data
         const usersCollection = collection(db, "users");
         const q = query(usersCollection, where("email", "==", email));
         const querySnapshot = await getDocs(q);
@@ -306,12 +333,16 @@ app.post('/login', async (req, res) => {
         if (!querySnapshot.empty) {
             const userData = querySnapshot.docs[0].data();
 
+            // Store user data in the session
             req.session.first_name = userData.first_name;
             req.session.last_name = userData.last_name;
-            req.session.email = email; // Store email in session
+            req.session.email = email;
+
+            // Set isAdmin to false for regular users
+            req.session.isAdmin = false;
 
             req.session.message = { type: 'success', message: "Login successful!" };
-            return res.redirect('/home');
+            return res.redirect('/home'); // Redirect normal users to home
         } else {
             throw new Error("User data not found in Firestore");
         }
@@ -337,6 +368,218 @@ app.post('/login', async (req, res) => {
         return res.redirect('/');
     }
 });
+
+// Display Assign Test Page
+app.get('/assign-test', async (req, res) => {
+    try {
+        // Fetch tests
+        const testsCollection = collection(db, "tests");
+        const testsSnapshot = await getDocs(testsCollection);
+        const tests = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Fetch users
+        const usersCollection = collection(db, "users");
+        const usersSnapshot = await getDocs(usersCollection);
+        const users = usersSnapshot.docs.map(doc => doc.data());
+
+        // Sample organizations data
+        const organizations = [
+            { id: '1', name: 'SSG' },
+            { id: '2', name: 'Navy' },
+            { id: '3', name: 'Army' },
+            { id: '4', name: 'Air Force' },
+            { id: '5', name: 'Marines' }
+        ];
+
+        // Render the EJS template and pass the data
+        res.render('assign-test', { tests, users, organizations });
+    } catch (err) {
+        console.error('Error fetching data for assign test:', err.message);
+        res.status(500).send('Error fetching data for assign test');
+    }
+});
+
+// Handle Assign Test Form Submission
+app.post('/assign-test', async (req, res) => {
+    const { organizationName, testId, userEmails } = req.body; // Get organizationName
+
+    try {
+        // Query organization by name
+        const organizationsQuery = query(
+            collection(db, 'organizations'),
+            where('name', '==', organizationName) // Query by organization name
+        );
+        const orgSnapshot = await getDocs(organizationsQuery);
+
+        if (orgSnapshot.empty) {
+            console.log('Organization not found:', organizationName);
+            return res.status(400).send('Organization not found.');
+        }
+
+        // Get the first matching organization document
+        const orgDoc = orgSnapshot.docs[0];
+        const organizationId = orgDoc.id; // Get organizationId from the document
+
+        // Verify test exists
+        const testRef = doc(db, 'tests', testId);
+        const testDoc = await getDoc(testRef);
+        if (!testDoc.exists()) {
+            console.log('Test not found:', testId);
+            return res.status(400).send('Test not found.');
+        }
+
+        // Get current timestamp
+        const currentTimestamp = new Date();
+
+        // Query for existing assignments with the same testId and organizationId
+        const existingAssignmentsQuery = query(
+            collection(db, 'test_assignments'),
+            where('organizationId', '==', organizationId),
+            where('testId', '==', testId)
+        );
+        const existingAssignmentsSnapshot = await getDocs(existingAssignmentsQuery);
+
+        let assignmentRef;
+
+        if (existingAssignmentsSnapshot.empty) {
+            // Create a new assignment if none exists
+            assignmentRef = doc(collection(db, 'test_assignments'));
+            await setDoc(assignmentRef, {
+                organizationId: organizationId,
+                testId: testId,
+                assignedAt: currentTimestamp,
+                emails: userEmails, // Array of emails
+                names: [], // Array of user names
+                assignerName: 'System' // Replace with dynamic assigner name if needed
+            });
+        } else {
+            // Update the existing assignment
+            const existingAssignmentDoc = existingAssignmentsSnapshot.docs[0].ref;
+            const existingAssignmentData = (await getDoc(existingAssignmentDoc)).data();
+
+            // Merge emails and names
+            const updatedEmails = [...new Set([...existingAssignmentData.emails, ...userEmails])];
+            const updatedNames = []; // Logic to combine names should be implemented
+
+            await updateDoc(existingAssignmentDoc, {
+                emails: updatedEmails,
+                names: updatedNames
+            });
+            assignmentRef = existingAssignmentDoc;
+        }
+
+        // Redirect to a page showing all allotted tests
+        res.redirect('/allotted-tests');
+    } catch (error) {
+        console.error('Error assigning test:', error.message);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+
+
+
+app.get('/allotted-tests', async (req, res) => {
+    try {
+        // Fetch tests
+        const testsCollection = collection(db, "tests");
+        const testsSnapshot = await getDocs(testsCollection);
+        const tests = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Fetch allotted tests data (if any specific allocation data exists)
+        // For simplicity, assuming all tests are allotted. Adjust as needed.
+        const allottedTests = tests.map(test => ({
+            ...test,
+            allotted_count: Math.floor(Math.random() * 10) // Example random number for allotted_count
+        }));
+
+        res.render('allotted-tests', { allottedTests });
+    } catch (err) {
+        console.error('Error fetching allotted tests:', err.message);
+        res.status(500).send('Error fetching allotted tests');
+    }
+});
+// Route to get test details and assigned emails
+// Route to get test details and assigned emails
+app.get('/details/:testId', async (req, res) => {
+    const { testId } = req.params;
+    const creatingTime = req.query.creating_time; // Assuming creating_time is passed as a query parameter
+
+    try {
+        // Fetch the test details
+        const testRef = doc(db, 'tests', testId);
+        const testDoc = await getDoc(testRef);
+        const test = testDoc.exists() ? testDoc.data() : null;
+
+        // Fetch all test assignments for the given testId
+        const assignmentsCollection = collection(db, 'test_assignments');
+        const assignmentsQuery = query(assignmentsCollection, where('testId', '==', testId));
+        const assignmentsSnapshot = await getDocs(assignmentsQuery);
+
+        // Extract email addresses from the assignments
+        const emails = [];
+        assignmentsSnapshot.forEach(doc => {
+            const assignmentData = doc.data();
+            if (assignmentData.email) {
+                emails.push(assignmentData.email);
+            }
+        });
+
+        // Render the EJS template and pass the data
+        res.render('details', { test, creatingTime, emails });
+    } catch (error) {
+        console.error('Error fetching test details:', error.message);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+
+
+
+
+// Route to display tests grouped by testId and test_time
+app.get('/test-create-by-organization', async (req, res) => {
+    try {
+        // Fetch all tests
+        const testsCollection = collection(db, "tests");
+        const testsSnapshot = await getDocs(testsCollection);
+        const tests = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Group tests by testId and test_time
+        const groupedTests = tests.reduce((acc, test) => {
+            const key = `${test.testId}_${test.test_time}`;
+            if (!acc[key]) {
+                acc[key] = {
+                    testId: test.testId,
+                    test_time: test.test_time,
+                    tests: []
+                };
+            }
+            acc[key].tests.push(test);
+            return acc;
+        }, {});
+
+        res.render('test-create-by-organization', { groupedTests: Object.values(groupedTests) });
+    } catch (err) {
+        console.error('Error fetching grouped tests:', err.message);
+        res.status(500).send('Error fetching grouped tests');
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Start the server
 app.listen(3000, () => {

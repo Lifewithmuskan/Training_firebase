@@ -68,11 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="text" id="correct-answer-${questionCount}" name="questions[${questionCount}][correct_answer]" required>
             </div>
 
-            <label for="image-${questionCount}">Image URL:</label>
-            <input type="text" id="image-${questionCount}" name="questions[${questionCount}][image]">
+            <label for="image-upload-${questionCount}">Upload Image:</label>
+            <input type="file" id="image-upload-${questionCount}" accept="image/*" onchange="previewImage(this, ${questionCount})">
+            <div id="image-preview-${questionCount}" class="image-preview"></div>
 
             <button type="button" class="action-button delete-button" onclick="deleteQuestion(${questionCount})">Delete Question</button>
-
             <hr>
         `;
 
@@ -119,6 +119,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         questionCount = questionDivs.length;
     }
+
+    // Image preview function
+    window.previewImage = function(input, questionIndex) {
+        const previewContainer = document.getElementById(`image-preview-${questionIndex}`);
+        const file = input.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = `Preview of image for Question ${questionIndex + 1}`;
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                previewContainer.innerHTML = ''; // Clear previous preview if any
+                previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            previewContainer.innerHTML = ''; // Clear preview if no file is selected
+        }
+    };
 
     // Preview test when "Preview" button is clicked
     previewTestButton.addEventListener('click', () => {
@@ -181,49 +203,15 @@ document.addEventListener('DOMContentLoaded', () => {
         saveTest();
     });
 
-    // Function to save the test
-    function saveTest() {
-        const formData = new FormData(questionsForm);
-        const testDetails = {
-            topic: document.getElementById('hidden-topic').value,
-            subTopic: document.getElementById('hidden-sub-topic').value,
-            time: document.getElementById('hidden-time').value,
-            questions: []
-        };
-
-        formData.forEach((value, key) => {
-            const match = key.match(/^questions\[(\d+)]\[(\w+)](?:\[(\d+)]?)?$/);
-            if (match) {
-                const [, index, field, optionIndex] = match;
-                if (!testDetails.questions[index]) {
-                    testDetails.questions[index] = {};
-                }
-                if (optionIndex !== undefined) {
-                    if (!testDetails.questions[index].options) {
-                        testDetails.questions[index].options = [];
-                    }
-                    testDetails.questions[index].options[optionIndex] = value;
-                } else {
-                    testDetails.questions[index][field] = value;
-                }
-            }
-        });
-
-        console.log(testDetails); // Replace this with your saving logic
-        alert('Test saved successfully!');
-    }
-
-    // Close preview modal when "Close" button is clicked
+    // Close preview modal
     closeModalButton.addEventListener('click', () => {
         previewModal.style.display = 'none';
     });
-});
 
-
-
-// Close the modal if the user clicks anywhere outside the modal content
-window.addEventListener('click', (event) => {
-    if (event.target === previewModal) {
-        previewModal.style.display = 'none';
-    }
+    // Close preview modal when clicking outside of content
+    window.addEventListener('click', (event) => {
+        if (event.target === previewModal) {
+            previewModal.style.display = 'none';
+        }
+    });
 });

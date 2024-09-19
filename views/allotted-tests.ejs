@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allotted Tests</title>
+    <link rel="stylesheet" href="/css/allotted-tests.css">
+</head>
+<body>
+    <div class="top-buttons">
+        <a href="/home" class="button">Home</a>
+        <a href="/assign-test" class="button">Assign Test</a>
+    </div>
+
+    <div class="container">
+        <h1 class="heading">Allotted Tests</h1>
+        <h2 class="sub_heading">View tests allotted to organizations</h2>
+
+        <div class="test-list">
+            <% allottedTests.forEach(test => { %>
+                <div class="test-card" onclick="window.location.href='/details/<%= encodeURIComponent(test.id) %>?creating_time=<%= encodeURIComponent(test.creating_time ? new Date(test.creating_time).toISOString() : '') %>'">
+                    <h3><%= test.test_topic %></h3>
+                    <p>Number of Allotted Tests: <%= test.allotted_count %></p>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+
+    
+</body>
+</html>

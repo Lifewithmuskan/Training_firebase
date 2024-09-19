@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Submission Details</title>
     <link rel="stylesheet" href="/css/upcoming.css">
+    <style>
+        .correct { background-color: lightgreen; }
+        .incorrect { background-color: lightcoral; }
+    </style>
 </head>
 <body>
     <header class="navbar">
@@ -37,39 +41,52 @@
                 <th>Submission Time:</th>
                 <td><%= new Date(submission.submittedAt.toDate()).toLocaleString() %></td>
             </tr>
-            <tr>
-                <th>Answers:</th>
-                <td>
-                    <% Object.keys(submission.answers).forEach((key) => { %>
-                        <p>Question <%= parseInt(key) + 1 %>: <%= submission.answers[key] %></p>
-                    <% }) %>
-                </td>
-            </tr>
         </table>
 
-        <h3>Test Questions and Correct Answers</h3>
+        <h3>Test Questions, User Answers, and Correct Answers</h3>
         <table>
             <thead>
                 <tr>
                     <th>Question</th>
                     <th>Options</th>
                     <th>Correct Answer</th>
+                    <th>Your Answer</th>
                 </tr>
             </thead>
             <tbody>
+                <% let correctCount = 0; %>
                 <% test.questions.forEach((question, index) => { %>
-                    <tr>
+                    <% let userAnswer = submission.answers[index]; %>
+                    <% let isCorrect = userAnswer === question.correct_answer; %>
+                    <% if (isCorrect) { correctCount++; } %>
+                    <tr class="<%= isCorrect ? 'correct' : 'incorrect' %>">
                         <td><%= question.question %></td>
                         <td>
-                            <% question.options.forEach((option, optionIndex) => { %>
+                            <% question.options.forEach((option) => { %>
                                 <p><%= option %></p>
                             <% }) %>
                         </td>
                         <td><%= question.correct_answer %></td>
+                        <td><%= userAnswer || 'Not answered' %></td>
                     </tr>
                 <% }) %>
             </tbody>
         </table>
+
+        <h3>Performance Summary</h3>
+        <div class="performance-summary">
+            <% let totalQuestions = test.questions.length; %>
+            <% let incorrectCount = totalQuestions - correctCount; %>
+            <% let scorePercentage = (correctCount / totalQuestions) * 100; %>
+            <p>Correct Answers: <%= correctCount %> out of <%= totalQuestions %> (<%= scorePercentage.toFixed(2) %>%)</p>
+            <% if (scorePercentage >= 0 && scorePercentage <= 50) { %>
+                <p>Level 3 training required</p>
+            <% } else if (scorePercentage > 50 && scorePercentage <= 70) { %>
+                <p>Level 2 training required</p>
+            <% } else if (scorePercentage > 70 && scorePercentage <= 100) { %>
+                <p>Level 1 training required</p>
+            <% } %>
+        </div>
     </div>
 
     <footer class="footer">

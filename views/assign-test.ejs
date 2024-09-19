@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Test</title>
+    <link rel="stylesheet" href="/css/assign-test.css">
+</head>
+<body>
+    <div class="top-buttons">
+        <a href="/home" class="button">Home</a>
+        <a href="/allotted-tests" class="button">View Allotted Tests</a>
+    </div>
+
+    <div class="container">
+        <h1 class="heading">Assign Test</h1>
+        <h2 class="sub_heading">Assign tests to users</h2>
+
+        <form action="/assign-test" method="POST">
+            <label for="organization">Select Organization:</label>
+            <select id="organization" name="organizationName"> <!-- Changed to organizationName -->
+                <% organizations.forEach(org => { %>
+                    <option value="<%= org.name %>"><%= org.name %></option> <!-- Use name as value -->
+                <% }) %>
+            </select>
+            
+            <label for="test">Select Test:</label>
+            <select id="test" name="testId">
+                <% tests.forEach(test => { %>
+                    <option value="<%= test.id %>"><%= test.test_topic %> - <%= test.test_sub_topic %></option>
+                <% }) %>
+            </select>
+
+            <h3>Select Users:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>User Name</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach(user => { %>
+                        <tr>
+                            <td>
+                                <input type="checkbox" id="user_<%= user.email %>" name="userEmails[]" value="<%= user.email %>">
+                            </td>
+                            <td><%= user.first_name %> <%= user.last_name %></td>
+                            <td><%= user.email %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+
+            <button type="submit" class="button">Assign Test</button>
+        </form>
+    </div>
+
+   
+</body>
+</html>
