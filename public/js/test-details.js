@@ -1,22 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const emailForm = document.getElementById('email-form');
-    const questionsSection = document.getElementById('questions-section');
     const testForm = document.getElementById('test-form');
 
-    emailForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-
-        const email = document.getElementById('email').value;
-
-        if (email) {
-            localStorage.setItem('userEmail', email);
-            emailForm.style.display = 'none';
-            questionsSection.style.display = 'block';
-        } else {
-            alert('Please enter a valid email address.');
-        }
-    });
-
+    // Handle test submission
     if (testForm) {
         testForm.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -25,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const testId = formData.get('testId'); // Retrieve testId from formData
             const answers = {};
 
+            // Collect answers from the form
             formData.forEach((value, key) => {
                 if (key.startsWith('answers[')) {
                     const index = key.match(/\[(\d+)\]/)[1];
@@ -32,21 +18,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            const email = localStorage.getItem('userEmail');
-
             try {
+                // Submit the test results to the backend
                 const response = await fetch(`/submit-test/${testId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, answers, testId }) // Include testId in the body
+                    body: JSON.stringify({ answers }) // No need to include email or testId
                 });
 
                 const result = await response.json();
+
                 if (response.ok) {
-                    alert(result.message);
-                    window.location.href = '/home';
+                    // Successfully submitted, now remove the test from the list in user_allot.ejs
+                    const userAllotContainer = document.getElementById('user-allot-container'); // Ensure this ID matches your HTML
+
+                    if (userAllotContainer) { // Check if the container exists
+                        const testElement = userAllotContainer.querySelector(`[data-test-id="${testId}"]`);
+                        if (testElement) {
+                            testElement.remove(); // Remove the completed test from the DOM
+                        }
+                    } else {
+                        console.warn('User allot container not found. Cannot remove test element.');
+                    }
+
+                    alert(result.message || 'Test submitted successfully!');
+                    window.location.href = '/home'; // Redirect the user to home
                 } else {
-                    alert(result.error);
+                    alert(result.error || 'An error occurred while submitting the test.');
                 }
             } catch (err) {
                 console.error('Error submitting test:', err);

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scores</title>
+    <link rel="stylesheet" href="/css/upcoming.css">
+</head>
+<body>
+    <div class="top-buttons">
+        <div class="top-buttons">
+        <a href="/home" class="button">Home</a>
+
+            <a href="/test-submissions" class="button">Test_submission</a>
+            <a href="/user-allot" class="button">User Allotment</a>
+        
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="heading">Candidate Scores</h1>
+        <h2 class="sub_heading">View candidates' scores and required training levels</h2>
+
+        <!-- Search Box -->
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Search by name or email...">
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Test Name</th>
+                    <th>Score (%)</th>
+                    <th>Training Level</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% results.forEach(result => { %>
+                    <tr>
+                        <td><%= result.userName %></td>
+                        <td><%= result.email %></td>
+                        <td><%= result.testName %></td>
+                        <td><%= result.score %></td>
+                        <td><%= result.trainingLevel %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('search');
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        searchInput.addEventListener('keyup', function() {
+            const filter = searchInput.value.toLowerCase();
+
+            tableRows.forEach(row => {
+                const name = row.cells[0].textContent.toLowerCase();
+                const email = row.cells[1].textContent.toLowerCase();
+                if (name.includes(filter) || email.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

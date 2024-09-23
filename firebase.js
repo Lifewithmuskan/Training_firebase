@@ -1,11 +1,11 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, collection, addDoc, getDocs, query, where, doc, getDoc ,limit, orderBy,    updateDoc,
-  setDoc} from "firebase/firestore";
+  setDoc,deleteDoc} from "firebase/firestore";
 import { getDatabase, ref, set, get } from "firebase/database";
 import dotenv from 'dotenv';
 
-// Load environment variables
+// Load environment variablesz
 dotenv.config();
 
 const firebaseConfig = {
@@ -50,5 +50,5 @@ export {
   getDoc,
   set,
   get,updateDoc,
-  setDoc
+  setDoc,deleteDoc
 };

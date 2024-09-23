@@ -2,16 +2,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const makeTestButton = document.getElementById('make-test');
     const questionsContainer = document.getElementById('questions-container');
     const testInfoContainer = document.getElementById('test-info-container');
-    const questionsForm = document.getElementById('questions-form');
-    const previewTestButton = document.getElementById('preview-test');
     const saveTestButton = document.getElementById('save-test');
-    const previewModal = document.getElementById('preview-modal');
-    const previewContent = document.getElementById('preview-content');
-    const closeModalButton = document.querySelector('.close-button');
     const addNewQuestionButton = document.getElementById('add-new-question');
     let questionCount = 0;
 
-    // Handle "Make Test" button click
     makeTestButton.addEventListener('click', () => {
         const testTopic = document.getElementById('test-topic').value.trim();
         const testSubTopic = document.getElementById('test-sub-topic').value.trim();
@@ -34,8 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Please fill in all fields before generating the test.');
         }
     });
+    addNewQuestionButton.addEventListener('click', () => {
+        generateQuestionForm();
+    });
+    
 
-    // Function to generate a new question form
     function generateQuestionForm() {
         const questionDiv = document.createElement('div');
         questionDiv.className = 'question';
@@ -50,9 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <select id="question-type-${questionCount}" name="questions[${questionCount}][type]" onchange="toggleAnswerType(${questionCount})">
                 <option value="mcq">Multiple Choice</option>
                 <option value="word">One-word Answer</option>
+                <option value="image">Image Question</option>
             </select>
 
-            <div id="options-container-${questionCount}">
+            <div id="options-container-${questionCount}" class="options-container">
                 <div class="options">
                     <label>Options:</label>
                     <div id="options-${questionCount}">
@@ -68,9 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="text" id="correct-answer-${questionCount}" name="questions[${questionCount}][correct_answer]" required>
             </div>
 
-            <label for="image-upload-${questionCount}">Upload Image:</label>
-            <input type="file" id="image-upload-${questionCount}" accept="image/*" onchange="previewImage(this, ${questionCount})">
-            <div id="image-preview-${questionCount}" class="image-preview"></div>
+            <div id="image-upload-container-${questionCount}" style="display: none;">
+                <label for="image-upload-${questionCount}">Upload Image:</label>
+                <input type="file" id="image-upload-${questionCount}" accept="image/*" onchange="previewImage(this, ${questionCount})">
+                <div id="image-preview-${questionCount}" class="image-preview"></div>
+            </div>
 
             <button type="button" class="action-button delete-button" onclick="deleteQuestion(${questionCount})">Delete Question</button>
             <hr>
@@ -80,19 +80,26 @@ document.addEventListener('DOMContentLoaded', () => {
         questionCount++;
     }
 
-    // Toggle between multiple-choice and one-word answer
     window.toggleAnswerType = function (questionIndex) {
         const questionType = document.getElementById(`question-type-${questionIndex}`).value;
         const optionsContainer = document.getElementById(`options-container-${questionIndex}`);
+        const imageUploadContainer = document.getElementById(`image-upload-container-${questionIndex}`);
 
-        if (questionType === 'word') {
-            optionsContainer.style.display = 'none';
-        } else {
+        if (questionType === 'mcq') {
             optionsContainer.style.display = 'block';
+            imageUploadContainer.style.display = 'none';
+            enableOptions(questionIndex); // Enable options fields for MCQ
+        } else if (questionType === 'image') {
+            optionsContainer.style.display = 'none';
+            imageUploadContainer.style.display = 'block';
+            disableOptions(questionIndex); // Disable options fields for image questions
+        } else {
+            optionsContainer.style.display = 'none';
+            imageUploadContainer.style.display = 'none';
+            disableOptions(questionIndex); // Disable options fields for one-word answers
         }
     };
 
-    // Add new option to a specific question
     window.addOption = function (questionIndex) {
         const optionsDiv = document.getElementById(`options-${questionIndex}`);
         const optionCount = optionsDiv.querySelectorAll('input').length + 1;
@@ -100,17 +107,16 @@ document.addEventListener('DOMContentLoaded', () => {
         newOption.type = 'text';
         newOption.name = `questions[${questionIndex}][options][]`;
         newOption.placeholder = `Option ${optionCount}`;
+        newOption.required = true;
         optionsDiv.appendChild(newOption);
     };
 
-    // Delete a question
     window.deleteQuestion = function (questionIndex) {
         const questionDiv = document.getElementById(`question-${questionIndex}`);
         questionDiv.remove();
         updateQuestionNumbers();
     };
 
-    // Function to update question numbers after deletion
     function updateQuestionNumbers() {
         const questionDivs = document.querySelectorAll('.question');
         questionDivs.forEach((div, index) => {
@@ -120,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
         questionCount = questionDivs.length;
     }
 
-    // Image preview function
     window.previewImage = function(input, questionIndex) {
         const previewContainer = document.getElementById(`image-preview-${questionIndex}`);
         const file = input.files[0];
@@ -131,87 +136,89 @@ document.addEventListener('DOMContentLoaded', () => {
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 img.alt = `Preview of image for Question ${questionIndex + 1}`;
-                img.style.maxWidth = '100%';
+                img.style.width = '150px';
                 img.style.height = 'auto';
-                previewContainer.innerHTML = ''; // Clear previous preview if any
+                previewContainer.innerHTML = '';
                 previewContainer.appendChild(img);
             };
             reader.readAsDataURL(file);
         } else {
-            previewContainer.innerHTML = ''; // Clear preview if no file is selected
+            previewContainer.innerHTML = '';
         }
     };
 
-    // Preview test when "Preview" button is clicked
-    previewTestButton.addEventListener('click', () => {
-        showPreview();
-    });
+    saveTestButton.addEventListener('click', (event) => {
+        const testData = {
+            topic: document.getElementById('hidden-topic').value,
+            subTopic: document.getElementById('hidden-sub-topic').value,
+            time: document.getElementById('hidden-time').value,
+            questions: []
+        };
 
-    // Show preview of test
-    function showPreview() {
-        previewContent.innerHTML = ''; // Clear existing content
+        const questionsDivs = document.querySelectorAll('.question');
+        let valid = true;
 
-        const testTopic = document.getElementById('hidden-topic').value;
-        const testSubTopic = document.getElementById('hidden-sub-topic').value;
-        const testTime = document.getElementById('hidden-time').value;
+        questionsDivs.forEach((div, index) => {
+            const question = {
+                text: div.querySelector(`input[name$="[question]"]`).value,
+                type: div.querySelector(`select[name$="[type]"]`).value,
+                options: [],
+                correctAnswer: div.querySelector(`input[name$="[correct_answer]"]`).value,
+            };
 
-        previewContent.innerHTML += `
-            <p><strong>Test Topic:</strong> ${testTopic}</p>
-            <p><strong>Sub-Topic:</strong> ${testSubTopic}</p>
-            <p><strong>Duration:</strong> ${testTime} minutes</p>
-        `;
-
-        Array.from(questionsForm.querySelectorAll('.question')).forEach((questionDiv, index) => {
-            const questionText = questionDiv.querySelector(`input[name$="[question]"]`).value;
-            const questionType = questionDiv.querySelector(`select[name$="[type]"]`).value;
-            const correctAnswer = questionDiv.querySelector(`input[name$="[correct_answer]"]`).value;
-            const imageURL = questionDiv.querySelector(`input[name$="[image]"]`).value;
-
-            let options = '';
-            if (questionType === 'mcq') {
-                options = Array.from(questionDiv.querySelectorAll(`input[name$="[options][]"]`))
-                    .map(option => option.value)
-                    .filter(value => value.trim() !== '')
-                    .map((option, idx) => `<li>Option ${idx + 1}: ${option}</li>`)
-                    .join('');
-            } else {
-                options = '<p>One-word answer required.</p>';
+            // Check for required fields
+            if (!question.text || !question.correctAnswer) {
+                valid = false;
+                alert(`Please fill in the question and correct answer for Question ${index + 1}.`);
             }
 
-            const imagePreview = imageURL ? `<img src="${imageURL}" alt="Question Image" style="max-width: 100%; height: auto; margin-top: 10px;">` : '';
+            // Check options only if the question type is MCQ
+            if (question.type === 'mcq') {
+                const optionInputs = div.querySelectorAll(`input[name$="[options][]"]`);
+                let hasValidOption = Array.from(optionInputs).some(optionInput => optionInput.value.trim() !== '');
+                if (!hasValidOption) {
+                    valid = false;
+                    alert(`Please fill in at least one option for Question ${index + 1}.`);
+                } else {
+                    optionInputs.forEach(optionInput => {
+                        question.options.push(optionInput.value);
+                    });
+                }
+            }
 
-            previewContent.innerHTML += `
-                <div class="preview-question">
-                    <p><strong>Question ${index + 1}:</strong> ${questionText}</p>
-                    ${imagePreview}
-                    <p><strong>Correct Answer:</strong> ${correctAnswer}</p>
-                    ${options}
-                </div>
-            `;
+            // Handle one-word answer and image types
+            if (question.type === 'word') {
+                question.options = []; // Clear options for one-word questions
+            } else if (question.type === 'image') {
+                const imageInput = div.querySelector(`input[type="file"]`);
+                if (imageInput.files.length === 0) {
+                    valid = false;
+                    alert(`Please upload an image for Question ${index + 1}.`);
+                }
+            }
+
+            testData.questions.push(question);
         });
 
-        previewModal.style.display = 'block';
-    }
-
-    // Handle "Add New Question" button click
-    addNewQuestionButton.addEventListener('click', () => {
-        generateQuestionForm();
-    });
-
-    // Save test when "Save Test" button is clicked
-    saveTestButton.addEventListener('click', () => {
-        saveTest();
-    });
-
-    // Close preview modal
-    closeModalButton.addEventListener('click', () => {
-        previewModal.style.display = 'none';
-    });
-
-    // Close preview modal when clicking outside of content
-    window.addEventListener('click', (event) => {
-        if (event.target === previewModal) {
-            previewModal.style.display = 'none';
+        if (valid) {
+            console.log('Test Data:', testData);
+            // Submit the form if validation passes
+            // document.getElementById('test-form').submit();
+        } else {
+            event.preventDefault();
         }
     });
+
+    function enableOptions(questionIndex) {
+        const optionInputs = document.querySelectorAll(`#options-${questionIndex} input`);
+        optionInputs.forEach(input => input.disabled = false);
+    }
+
+    function disableOptions(questionIndex) {
+        const optionInputs = document.querySelectorAll(`#options-${questionIndex} input`);
+        optionInputs.forEach(input => {
+            input.value = ''; // Clear value
+            input.disabled = true; // Disable field
+        });
+    }
 });

@@ -5,18 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assign Test</title>
     <link rel="stylesheet" href="/css/assign-test.css">
+    <script>
+        function validateForm(event) {
+            // Prevent form submission
+            event.preventDefault();
+
+            // Get all checkboxes
+            const checkboxes = document.querySelectorAll('input[name="userEmails[]"]:checked');
+
+            // Check if at least one checkbox is selected
+            if (checkboxes.length === 0) {
+                alert("Please select at least one candidate before submitting.");
+            } else {
+                // If selected, show success alert and submit the form
+                alert("Test assigned successfully!");
+                document.querySelector('form').submit(); // Submit the form
+            }
+        }
+    </script>
 </head>
 <body>
+    
     <div class="top-buttons">
         <a href="/home" class="button">Home</a>
-        <a href="/allotted-tests" class="button">View Allotted Tests</a>
+        <a href="/user-allot" class="button">View Allotted Tests</a>
     </div>
 
     <div class="container">
-        <h1 class="heading">Assign Test</h1>
-        <h2 class="sub_heading">Assign tests to users</h2>
+        <h1 class="heading">Allotted Tests</h1>
+        <h2 class="sub_heading">View tests allotted to organizations</h2>
 
-        <form action="/assign-test" method="POST">
+        <form action="/assign-test" method="POST" onsubmit="validateForm(event)">
             <label for="organization">Select Organization:</label>
             <select id="organization" name="organizationName"> <!-- Changed to organizationName -->
                 <% organizations.forEach(org => { %>
@@ -57,6 +76,5 @@
         </form>
     </div>
 
-   
 </body>
 </html>

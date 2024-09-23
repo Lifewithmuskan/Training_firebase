@@ -158,6 +158,19 @@ input[type="checkbox"] {
     margin-bottom: 1rem;
 }
 
+/* Optional: Style for the search box */
+.search-container {
+    margin-bottom: 20px;
+}
+.search-container input {
+    padding: 10px;
+    width: 200px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 20px;
+    float: right;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {

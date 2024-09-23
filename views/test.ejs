@@ -8,36 +8,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <section class="intro-section">
-            <div class="intro-text">
-                <p class="intro_p">
-                    Welcome to our testing platform, designed to help you discover the most suitable training programs to enhance your skills and capabilities. We believe that personal growth not only transforms individuals but also elevates our society as a whole. By identifying the right training tailored to your needs, you can achieve your full potential and contribute positively to your community.
-                </p>
-                <p class="intro_p">
-                    Our aim is to empower you with the insights needed to choose the most impactful training, ensuring that your efforts translate into meaningful progress for both yourself and those around you. We are committed to supporting you in making informed decisions that will not only advance your career but also drive positive change in your community.
-                </p>
-            </div>
-            <div class="intro-image">
-                <img src="/public/css/image/drdo.jpg" alt="DRDO Training" class="drdo-image">
-            </div>
-        </section>
-        
-        <div class="main-container">
-            <h1 class="main_heading">TRAINING NEED ANALYSIS</h1>
-            <div class="role-selection">
-                <button id="user-selection" class="btn">USER</button>
-                <button id="admin-selection" class="btn">ADMIN</button>
-            </div>
-        </div>
+    <div class="background-container">
+        <div class="content-container">
+            <!-- Left Section -->
+            <section class="left-section">
+                <div class="intro-text">
+                    <img src="https://pbs.twimg.com/media/GMBny-8acAEGwdf?format=jpg&name=large" alt="DRDO Training" class="drdo-image">
 
-        <div class="options" style="display: none;">
-            <button id="create-account" class="btn">Create Account</button>
-            <button id="existing-user" class="btn">Existing User</button>
-        </div>
+                    <p class="intro_p">
+                        Welcome to our testing platform, designed to help you discover the most suitable training programs to enhance your skills and capabilities. We believe that personal growth not only transforms individuals but also elevates our society as a whole.
+                    </p>
+                </div>
+            </section>
 
-        <div id="form-container" class="form-container">
-            <!-- Form content will be inserted here -->
+            <!-- Right Section -->
+            <section class="right-section">
+                <div class="main-container">
+                    <h1 class="main_heading">TRAINING NEED ANALYSIS</h1>
+                    <div class="role-selection">
+                        <button id="user-selection" class="btn">USER</button>
+                        <button id="admin-selection" class="btn">ADMIN</button>
+                    </div>
+                    <div class="options" style="display: none;">
+                        <button id="create-account" class="btn">Create Account</button>
+                        <button id="existing-user" class="btn">Existing User</button>
+                    </div>
+                    <div id="form-container" class="form-container"></div>
+                </div>
+            </section>
         </div>
     </div>
 

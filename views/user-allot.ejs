@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Submissions</title>
+    <link rel="stylesheet" href="/css/user-allot.css">
+    <style>
+        .test-div {
+            position: relative;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-topic {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .show-test-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .show-test-button:hover {
+            background-color: #45a049;
+        }
+
+        .email-list {
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+    <script>
+        function handleClick(event, testId) {
+            event.target.classList.add('clicked');
+            setTimeout(() => {
+                window.location.href = '/test-details/' + testId;
+            }, 300);
+        }
+
+        function toggleEmails(id) {
+            const emailDiv = document.getElementById('emails-' + id);
+            emailDiv.style.display = emailDiv.style.display === 'none' || emailDiv.style.display === '' ? 'block' : 'none';
+        }
+
+        function showTestDetails(testId) {
+            window.location.href = '/test-details/' + testId;
+        }
+    </script>
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="top-buttons">
+        <a href="/home" class="button">Home</a>
+    </div>
+
+    <div class="container">
+        <h1 class="heading">Test Submissions</h1>
+        <h2 class="sub-heading">Review the assigned tests</h2>
+
+        <% submissions.forEach(submission => { 
+            const testDetails = tests.find(test => test.id === submission.testId); // Fetch test details
+            const isAssignedToUser = submission.emails && submission.emails.includes(userEmail);
+        %>
+            <% if (isAdmin || isAssignedToUser) { %>
+                <div class="test-div" data-test-id="<%= submission.testId %>" onclick="toggleEmails('<%= submission.id %>')">
+                    
+                    <!-- Test details section on the left -->
+                    <div>
+                        <h3 class="test-topic">
+                            <% if (testDetails) { %>
+                                <span onclick="window.location.href='/test-details/<%= submission.testId %>'">
+                                    <%= testDetails.test_topic %>
+                                </span>
+                            <% } else { %>
+                                <span class="new-test-assigned" onclick="handleClick(event, '<%= submission.testId %>')">
+                                    New Test Assigned
+                                </span>
+                            <% } %>
+                        </h3>
+
+                        <p class="test-sub-topic"><%= testDetails ? testDetails.test_sub_topic : "" %></p>
+                        <p class="assigned-at">Assigned At: <%= new Date(submission.assignedAt.seconds * 1000).toLocaleString() %></p>
+                        
+                        <% if (isAdmin) { %>
+                          
+                            <div id="emails-<%= submission.id %>" class="email-list">
+                                <h4>Assigned Emails:</h4>
+                                <ul>
+                                    <% if (Array.isArray(submission.emails)) { %>
+                                        <% submission.emails.forEach(email => { %>
+                                            <li><%= email %></li>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <li>No emails assigned</li>
+                                    <% } %>
+                                </ul>
+                            </div>
+                        <% } else if (isAssignedToUser) { %>
+                            <p>You are assigned to this test.</p>
+                            <div id="emails-<%= submission.id %>" class="email-list">
+                                <h4>Your Email:</h4>
+                                <p><%= userEmail %></p>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <!-- Show Test button on the right -->
+                    <button class="show-test-button" onclick="showTestDetails('<%= submission.testId %>'); event.stopPropagation();">Show Test</button>
+                    
+                </div>
+            <% } %>
+        <% }) %>
+    </div>
+</body>
+</html>

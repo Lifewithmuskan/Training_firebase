@@ -24,10 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Function to change "Introduction" or "Create Test" based on hover
-    window.changeToIntroduction = () => {
-        document.getElementById("about").innerHTML = "Introduction";
+    window.changeToscoreTest() = () => {
+        document.getElementById("score-test").innerHTML = "Test Score";
     }
-
+    
     window.changeToCreateTest = () => {
         document.getElementById("create-test").innerHTML = "Create Test";
     }
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.changeToAssignTest = () => {
-        document.getElementById("test-submissions").innerHTML = " test result";
+        document.getElementById("test-submissions").innerHTML = " Test Result";
     }
     
     window.changeToIntroduction() = () => {
@@ -69,3 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+const hamburger = document.querySelector('.hamburger');
+const nav = document.querySelector('.main-nav');
+
+hamburger.addEventListener('click', () => {
+  nav.classList.toggle('active');
+});
+

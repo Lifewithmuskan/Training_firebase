@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import session from 'express-session';
 import checkTestAnswers from './utils.js';
+
 import {
     auth,
     createUserWithEmailAndPassword,
@@ -13,7 +14,7 @@ import {
     getDoc,
     doc,
     query,
-    where,setDoc,
+    where,setDoc,deleteDoc
 } from './firebase.js';
 
 const app = express();
@@ -30,6 +31,7 @@ app.use(session({
     secret: 'your-secret-key',
     resave: false,
     saveUninitialized: true,
+    cookie: { secure: false }
 }));
 
 // Home page route
@@ -43,9 +45,13 @@ app.get('/home', (req, res) => {
     res.render('index', {
         first_name: req.session.first_name || "Guest",
         last_name: req.session.last_name || "",
+        email: req.session.email || "",
+
         isAdmin: req.session.isAdmin || false // Pass isAdmin value
     });
 });
+
+import dayjs from 'dayjs'; // Import dayjs for date handling
 
 
 // Fetch upcoming tests
@@ -55,12 +61,84 @@ app.get('/upcoming-tests', async (req, res) => {
         const testsSnapshot = await getDocs(testsCollection);
         const tests = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        res.render('upcoming-tests', { tests });
+        // Get today's date
+        const today = dayjs().startOf('day');
+
+        // Filter for upcoming tests
+        const upcomingTests = tests.filter(test => dayjs(test.date).isAfter(today)); // Ensure test.date is a valid date field
+
+        // Check if the user is an admin
+        const isAdmin = req.user && req.user.role === 'admin'; // Adjust based on your user management
+
+        res.render('upcoming-tests', { tests: upcomingTests, isAdmin });
     } catch (err) {
         console.error('Error fetching tests:', err.message);
-        res.render('upcoming-tests', { tests: [] });
+        res.render('upcoming-tests', { tests: [], isAdmin: false }); // Default isAdmin to false on error
     }
 });
+
+
+// Fetch previous tests
+app.get('/previous-tests', async (req, res) => {
+    try {
+        const testsCollection = collection(db, "tests");
+        const testsSnapshot = await getDocs(testsCollection);
+        const tests = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Get today's date
+        const today = dayjs().startOf('day');
+
+        // Filter for previous tests
+        const previousTests = tests.filter(test => dayjs(test.date).isBefore(today)); // Ensure test.date is a valid date field
+
+        res.render('previous-tests', { tests: previousTests });
+    } catch (err) {
+        console.error('Error fetching tests:', err.message);
+        res.render('previous-tests', { tests: [] });
+    }
+});
+
+
+app.post('/delete-test/:testId', async (req, res) => {
+    const testId = req.params.testId;
+    
+    try {
+        const testsCollection = collection(db, "tests");
+        await deleteDoc(doc(testsCollection, testId));
+
+        req.session.message = { type: 'success', message: "Test deleted successfully!" };
+        res.redirect('/upcoming-tests');
+    } catch (err) {
+        console.error('Error deleting test:', err.message);
+        req.session.message = { type: 'danger', message: "Error deleting test. Please try again." };
+        res.redirect('/upcoming-tests');
+    }
+});
+
+
+app.post('/update-test/:testId', async (req, res) => {
+    const testId = req.params.testId;
+    const { topic, subtopic, time, questions } = req.body;
+
+    try {
+        const testsCollection = collection(db, "tests");
+        await updateDoc(doc(testsCollection, testId), {
+            topic,
+            subtopic,
+            time,
+            questions
+        });
+
+        req.session.message = { type: 'success', message: "Test updated successfully!" };
+        res.redirect('/upcoming-tests');
+    } catch (err) {
+        console.error('Error updating test:', err.message);
+        req.session.message = { type: 'danger', message: "Error updating test. Please try again." };
+        res.redirect('/upcoming-tests');
+    }
+});
+
+
 
 // Fetch and display test submissions
 
@@ -68,6 +146,8 @@ app.get('/upcoming-tests', async (req, res) => {
 app.get('/test-submissions', async (req, res) => {
     try {
         const submissionsCollection = collection(db, "test_submissions");
+        const userCollection = collection(db, "users");
+        const testsCollection = collection(db, "tests");
         let submissionsSnapshot;
 
         if (req.session.isAdmin) {
@@ -76,17 +156,74 @@ app.get('/test-submissions', async (req, res) => {
         } else {
             // Regular user: Fetch only their own submissions
             const userEmail = req.session.email;
+
+            // Check if userEmail is defined
+            if (!userEmail) {
+                throw new Error("User email is undefined");
+            }
+
             const q = query(submissionsCollection, where("email", "==", userEmail));
             submissionsSnapshot = await getDocs(q);
         }
 
-        const submissions = submissionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const submissions = [];
+
+        // Loop through each submission
+        for (const submissionDoc of submissionsSnapshot.docs) {
+            const submissionData = submissionDoc.data();
+            const userEmail = submissionData.email;
+
+            // Check if userEmail is defined in the submission
+            if (!userEmail) {
+                console.warn(`Submission ${submissionDoc.id} has no email field`);
+                continue; // Skip this submission
+            }
+
+            // Fetch user data from 'users' collection based on the email
+            const userQuery = query(userCollection, where("email", "==", userEmail));
+            const userSnapshot = await getDocs(userQuery);
+
+            let userData = {};
+            if (!userSnapshot.empty) {
+                const userDoc = userSnapshot.docs[0];
+                userData = userDoc.data(); // Extract user information
+            }
+
+            // Fetch test details from 'tests' collection based on the testId in submission
+            let testData = {};
+            if (submissionData.testId) {
+                const testDocRef = doc(db, "tests", submissionData.testId);
+                const testSnapshot = await getDoc(testDocRef);
+                if (testSnapshot.exists()) {
+                    testData = testSnapshot.data(); // Get test details (including test_topic)
+                }
+            }
+
+            // Combine submission data with user and test data
+            submissions.push({
+                id: submissionDoc.id,
+                ...submissionData,
+                userInfo: {
+                    first_name: userData.first_name || '',
+                    last_name: userData.last_name || '',
+                    department: userData.department || '',
+                    education: userData.education || '',
+                    position: userData.position || ''
+                },
+                testInfo: {
+                    test_topic: testData.test_topic || 'Unknown'
+                }
+            });
+        }
+
+        // Render the 'test-submissions' page with the combined data
         res.render('test-submissions', { submissions });
     } catch (err) {
         console.error('Error fetching submissions:', err.message);
         res.render('test-submissions', { submissions: [] });
     }
 });
+
 
 
 app.get('/submission-details/:id', async (req, res) => {
@@ -99,6 +236,9 @@ app.get('/submission-details/:id', async (req, res) => {
         if (submissionSnapshot.exists()) {
             const submission = submissionSnapshot.data();
 
+            // Get total questions from the corresponding test
+            const totalQuestions = submission.testId ? await getTotalQuestionsFromTest(submission.testId) : 0;
+
             // Fetch the corresponding test details
             const testDocRef = doc(db, "tests", submission.testId);
             const testSnapshot = await getDoc(testDocRef);
@@ -109,7 +249,7 @@ app.get('/submission-details/:id', async (req, res) => {
             console.log('Fetched Test:', test);
 
             // Render the details page with both submission and test data
-            res.render('submission-details', { submission, test });
+            res.render('submission-details', { submission, test, totalQuestions });
         } else {
             res.status(404).send('Submission not found');
         }
@@ -120,8 +260,166 @@ app.get('/submission-details/:id', async (req, res) => {
 });
 
 
+app.get('/user-allot', async (req, res) => {
+    try {
+        // Collection references
+        const submissionsCollection = collection(db, "test_assignments");
+        const testsCollection = collection(db, "tests");
+        
+        let submissionsSnapshot;
+        let testsSnapshot;
+
+        if (req.session.isAdmin) {
+            // Admin: Fetch all submissions and tests
+            submissionsSnapshot = await getDocs(submissionsCollection);
+            testsSnapshot = await getDocs(testsCollection);
+        } else {
+            // Regular user: Fetch only their own submissions
+            const userEmail = req.session.email;
+            const submissionsQuery = query(submissionsCollection, where("emails", "array-contains", userEmail));
+            submissionsSnapshot = await getDocs(submissionsQuery);
+
+            const testsQuery = query(testsCollection, where("emails", "array-contains", userEmail));
+            testsSnapshot = await getDocs(testsQuery);
+        }
+
+        // Mapping results from both collections
+        const submissions = submissionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const tests = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Render the template with both submissions and tests data
+        res.render('user-allot', { submissions, tests, userEmail: req.session.email, isAdmin: req.session.isAdmin });
+    } catch (err) {
+        console.error('Error fetching submissions:', err.message);
+        res.render('user-allot', { submissions: [], tests: [], userEmail: null, isAdmin: false });
+    }
+});
+
+app.get('/score', async (req, res) => {
+    try {
+        const submissionsCollection = collection(db, "test_submissions");
+        const submissionsSnapshot = req.session.isAdmin 
+            ? await getDocs(submissionsCollection) 
+            : await getDocs(query(submissionsCollection, where("email", "==", req.session.email)));
+
+        const submissions = submissionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Fetch all users in a single query if not admin
+        const userMap = req.session.isAdmin 
+            ? {}
+            : await fetchAllUsers();
+
+        const results = submissions.map(submission => {
+            const scoreData = calculateScore(submission);
+            const userEmail = submission.email;
+            const userName = req.session.isAdmin ? userMap[userEmail]?.name || 'Unknown' : req.session.first_name + ' ' + req.session.last_name;
+
+            return {
+                userName,
+                email: userEmail,
+                score: scoreData.scorePercentage.toFixed(2),
+                trainingLevel: scoreData.trainingLevel
+            };
+        });
+
+        res.render('score', { results, userEmail: req.session.email, isAdmin: req.session.isAdmin });
+    } catch (err) {
+        console.error('Error fetching submissions:', err.message);
+        res.render('score', { results: [], userEmail: null, isAdmin: false });
+    }
+});
+
+async function fetchAllUsers() {
+    const usersCollection = collection(db, "users");
+    const usersSnapshot = await getDocs(usersCollection);
+    const users = usersSnapshot.docs.map(doc => ({ email: doc.data().email, name: `${doc.data().first_name} ${doc.data().last_name}` }));
+    
+    return users.reduce((acc, user) => {
+        acc[user.email] = { name: user.name };
+        return acc;
+    }, {});
+}
+
+app.get('/score', async (req, res) => {
+    try {
+        const submissionsCollection = collection(db, "test_submissions");
+        const submissionsSnapshot = req.session.isAdmin 
+            ? await getDocs(submissionsCollection) 
+            : await getDocs(query(submissionsCollection, where("email", "==", req.session.email)));
+
+        const submissions = submissionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Fetch all users in a single query if not admin
+        const userMap = req.session.isAdmin 
+            ? {}
+            : await fetchAllUsers();
+
+        const results = submissions.map(submission => {
+            const scoreData = calculateScore(submission);
+            const userEmail = submission.email;
+            const userName = req.session.isAdmin 
+                ? userMap[userEmail]?.name || 'Unknown' 
+                : `${req.session.first_name} ${req.session.last_name}`;
+
+            return {
+                userName,
+                email: userEmail,
+                score: scoreData.scorePercentage.toFixed(2),
+                trainingLevel: scoreData.trainingLevel
+            };
+        });
+
+        res.render('score', { results, userEmail: req.session.email, isAdmin: req.session.isAdmin });
+    } catch (err) {
+        console.error('Error fetching submissions:', err.message);
+        res.render('score', { results: [], userEmail: null, isAdmin: false });
+    }  
+});
+
+function calculateScore(submission) {
+    // Ensure answers is an array, default to empty if not
+    const userAnswers = Array.isArray(submission.answers) ? submission.answers : [];
+    const correctAnswers = Array.isArray(submission.correctAnswers) ? submission.correctAnswers : [];
+    const totalQuestions = userAnswers.length;
+
+    const correctCount = userAnswers.filter((answer, index) => answer === correctAnswers[index]).length;
+    const scorePercentage = totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0; // Avoid division by zero
+
+    let trainingLevel;
+    if (scorePercentage <= 50) {
+        trainingLevel = "Level 3 training required";
+    } else if (scorePercentage <= 70) {
+        trainingLevel = "Level 2 training required";
+    } else {
+        trainingLevel = "Level 1 training required";
+    }
+
+    return { scorePercentage, trainingLevel };
+}
 
 
+
+// Helper function to get total questions from a test
+async function getTotalQuestionsFromTest(testId) {
+    const testDocRef = doc(db, "tests", testId);
+    const testSnapshot = await getDoc(testDocRef);
+    if (testSnapshot.exists()) {
+        const testData = testSnapshot.data();
+        return testData.questions.length; // Assuming questions is an array
+    }
+    return 0; // Handle case where the test doesn't exist
+}
+
+// Helper function to fetch questions for a test
+async function getTestQuestions(testId) {
+    const testDocRef = doc(db, "tests", testId);
+    const testSnapshot = await getDoc(testDocRef);
+    if (testSnapshot.exists()) {
+        const testData = testSnapshot.data();
+        return testData.questions || []; // Return questions array
+    }
+    return []; // Handle case where the test doesn't exist
+}
 // Score page route
 app.get('/score-page/:testId', async (req, res) => {
     const { testId } = req.params;
@@ -150,19 +448,36 @@ app.get('/score-page/:testId', async (req, res) => {
     }
 });
 
-// Test details route
 app.get('/test-details/:id', async (req, res) => {
     const { id } = req.params;
+    const isAdmin = req.session.isAdmin; // Check if user is admin
     try {
         const testDocRef = doc(db, "tests", id);
         const testSnapshot = await getDoc(testDocRef);
 
         if (testSnapshot.exists()) {
-            res.render('test-details', {
-                testContent: testSnapshot.data(),
-                testId: id,
-                email: req.session.email || null  // Pass email from session
-            });
+            const testData = testSnapshot.data();
+            if (isAdmin) {
+                // Render view only for admin
+                res.render('test-view', {
+                    testContent: testData,
+                    testId: id,
+                    email: req.session.email || null,
+                    topic: testData.test_topic,
+                    subtopic: testData.test_sub_topic,
+                    time: testData.test_time
+                });
+            } else {
+                // Render test details for users
+                res.render('test-details', {
+                    testContent: testData,
+                    testId: id,
+                    email: req.session.email || null,
+                    topic: testData.test_topic,
+                    subtopic: testData.test_sub_topic,
+                    time: testData.test_time
+                });
+            }
         } else {
             res.status(404).send('Test not found');
         }
@@ -172,23 +487,37 @@ app.get('/test-details/:id', async (req, res) => {
     }
 });
 
+
+
+
+
+
 // Create test page (GET)
+
+// Create test route (GET)
 app.get('/create-test', (req, res) => {
     res.render('create-test');
 });
 
 // Create test route (POST)
 app.post('/create-test', async (req, res) => {
-    const { testName, description, questions } = req.body;
+    const { testTopic, testSubTopic, testTime, testDate, questions } = req.body;
 
-    if (!testName || !description || !questions || !Array.isArray(questions)) {
+    // Validate inputs
+    if (!testTopic || !testSubTopic || !testTime || !testDate || !questions || !Array.isArray(questions)) {
         req.session.message = { type: 'danger', message: "All fields are required, and questions must be an array." };
         return res.redirect('/create-test');
     }
 
     try {
         const testsCollection = collection(db, "tests");
-        await addDoc(testsCollection, { testName, description, questions });
+        await addDoc(testsCollection, {
+            test_topic: testTopic,
+            test_sub_topic: testSubTopic,
+            test_time: testTime,
+            test_date: new Date(testDate), // Save the date
+            questions
+        });
 
         req.session.message = { type: 'success', message: "Test created successfully!" };
         return res.redirect('/upcoming-tests');
@@ -198,6 +527,7 @@ app.post('/create-test', async (req, res) => {
         return res.redirect('/create-test');
     }
 });
+
 
 app.post('/save-test', async (req, res) => {
     const { test_topic, test_sub_topic, test_time, questions } = req.body;
@@ -224,25 +554,44 @@ app.post('/save-test', async (req, res) => {
     }
 });
 
-
-
 app.post('/submit-test/:testId', async (req, res) => {
-    const { testId } = req.params;
-    const { email, answers } = req.body;
-    console.log('Received submission:', { testId, email, answers }); // For debugging
+    const { testId } = req.params; // Comes from the URL
+    const { answers } = req.body; // Answers should be sent in the body
 
-    if (!answers || Object.keys(answers).length === 0 || !email || testId !== req.body.testId) {
-        console.log('Missing data:', { answers, email });
-        return res.status(400).json({ error: 'Missing answers, email, or test ID mismatch' });
+    console.log('Received submission:', { testId, answers });
+
+    // Log req.body to check the incoming data
+    console.log('Request body:', req.body);
+
+    if (!answers || Object.keys(answers).length === 0) {
+        console.log('Missing data:', { answers, testId });
+        return res.status(400).json({ error: 'Missing answers' });
     }
 
+    // Ensure the user is logged in
+    
+    const email = req.session.email;
+    const firstName = req.session.first_name; // Use first_name instead of firstName
+    const lastName = req.session.last_name; 
+
+    if (!email || !firstName || !lastName) {
+        console.log('Missing user data in session:', { email, firstName, lastName });
+        return res.status(400).json({ error: 'User must be logged in to submit tests' });
+    }
+
+    // Proceed with saving to the database
     try {
         const submissionRef = await addDoc(collection(db, "test_submissions"), {
             testId,
             email,
+            firstName,
+            lastName,
             answers,
             submittedAt: new Date()
         });
+
+        // Optionally delete the test assignment if that's your logic
+        await deleteDoc(doc(db, 'test_assignments', testId));
 
         console.log("Test submission saved with ID: ", submissionRef.id);
         res.json({ message: 'Test submitted successfully', testId, submissionId: submissionRef.id });
@@ -251,9 +600,6 @@ app.post('/submit-test/:testId', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-
-
 
 
 
@@ -302,72 +648,7 @@ app.post('/user', async (req, res) => {
 });
 
 // User login route
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
 
-    if (!email || !password) {
-        req.session.message = { type: 'danger', message: "Email and password are required." };
-        return res.redirect('/');
-    }
-
-    try {
-        // Check if user is the admin
-        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            // Set session for admin
-            req.session.isAdmin = true;
-            req.session.first_name = "Admin";
-            req.session.last_name = "";
-
-            req.session.message = { type: 'success', message: "Welcome Admin!" };
-            return res.redirect('/home'); // Redirect to admin dashboard
-        }
-
-        // For regular users, sign in using Firebase Authentication
-        await signInWithEmailAndPassword(auth, email, password);
-
-        // Query Firestore for the user data
-        const usersCollection = collection(db, "users");
-        const q = query(usersCollection, where("email", "==", email));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-            const userData = querySnapshot.docs[0].data();
-
-            // Store user data in the session
-            req.session.first_name = userData.first_name;
-            req.session.last_name = userData.last_name;
-            req.session.email = email;
-
-            // Set isAdmin to false for regular users
-            req.session.isAdmin = false;
-
-            req.session.message = { type: 'success', message: "Login successful!" };
-            return res.redirect('/home'); // Redirect normal users to home
-        } else {
-            throw new Error("User data not found in Firestore");
-        }
-    } catch (err) {
-        console.error('Error during login:', err.message);
-
-        let errorMessage;
-        switch (err.code) {
-            case 'auth/user-not-found':
-                errorMessage = "User not found.";
-                break;
-            case 'auth/wrong-password':
-                errorMessage = "Incorrect password.";
-                break;
-            case 'auth/invalid-email':
-                errorMessage = "Invalid email format.";
-                break;
-            default:
-                errorMessage = "Error during login. Please try again.";
-        }
-
-        req.session.message = { type: 'danger', message: errorMessage };
-        return res.redirect('/');
-    }
-});
 
 // Display Assign Test Page
 app.get('/assign-test', async (req, res) => {
@@ -477,9 +758,6 @@ app.post('/assign-test', async (req, res) => {
 });
 
 
-
-
-
 app.get('/allotted-tests', async (req, res) => {
     try {
         // Fetch tests
@@ -501,36 +779,183 @@ app.get('/allotted-tests', async (req, res) => {
     }
 });
 // Route to get test details and assigned emails
-// Route to get test details and assigned emails
-app.get('/details/:testId', async (req, res) => {
-    const { testId } = req.params;
-    const creatingTime = req.query.creating_time; // Assuming creating_time is passed as a query parameter
+app.get('/test-details/:id', async (req, res) => {
+    const { id } = req.params;
+    const isAdmin = req.session.isAdmin; // Check if user is admin
+    try {
+        const testDocRef = doc(db, "tests", id);
+        const testSnapshot = await getDoc(testDocRef);
+
+        if (testSnapshot.exists()) {
+            const testData = testSnapshot.data();
+            if (isAdmin) {
+                // Render view only for admin
+                res.render('test-view', {
+                    testContent: testData,
+                    testId: id,
+                    email: req.session.email || null,
+                    topic: testData.test_topic,
+                    subtopic: testData.test_sub_topic,
+                    time: testData.test_time
+                });
+            } else {
+                // Render test details for users
+                res.render('test-details', {
+                    testContent: testData,
+                    testId: id,
+                    email: req.session.email || null,
+                    topic: testData.test_topic,
+                    subtopic: testData.test_sub_topic,
+                    time: testData.test_time
+                });
+            }
+        } else {
+            res.status(404).send('Test not found');
+        }
+    } catch (err) {
+        console.error('Error fetching test details:', err.message);
+        res.status(500).send('Error fetching test details'); // Consider sending a more user-friendly message
+    }
+});
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        req.session.message = { type: 'danger', message: "Email and password are required." };
+        return res.redirect('/');
+    }
 
     try {
-        // Fetch the test details
-        const testRef = doc(db, 'tests', testId);
-        const testDoc = await getDoc(testRef);
-        const test = testDoc.exists() ? testDoc.data() : null;
+        // Check if the user is the admin
+        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+            req.session.isAdmin = true;
+            req.session.first_name = "Admin";
+            req.session.last_name = "";
 
-        // Fetch all test assignments for the given testId
-        const assignmentsCollection = collection(db, 'test_assignments');
-        const assignmentsQuery = query(assignmentsCollection, where('testId', '==', testId));
-        const assignmentsSnapshot = await getDocs(assignmentsQuery);
+            req.session.message = { type: 'success', message: "Welcome Admin!" };
+            return res.redirect('/home'); // Redirect to admin dashboard
+        }
 
-        // Extract email addresses from the assignments
-        const emails = [];
-        assignmentsSnapshot.forEach(doc => {
-            const assignmentData = doc.data();
-            if (assignmentData.email) {
-                emails.push(assignmentData.email);
+        // For regular users, sign in using Firebase Authentication
+        await signInWithEmailAndPassword(auth, email, password);
+
+        // Query Firestore for the user data
+        const usersCollection = collection(db, "users");
+        const q = query(usersCollection, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const userData = querySnapshot.docs[0].data();
+
+            // Store user data in the session
+            req.session.first_name = userData.first_name || "";
+            req.session.last_name = userData.last_name || "";
+            req.session.email = email;
+            req.session.isAdmin = false; // Set isAdmin to false for regular users
+
+            req.session.message = { type: 'success', message: "Login successful!" };
+            return res.redirect('/home'); // Redirect normal users to home
+        } else {
+            throw new Error("User data not found in Firestore");
+        }
+    } catch (err) {
+        console.error('Error during login:', err.message);
+
+        let errorMessage;
+        if (err.code) {
+            switch (err.code) {
+                case 'auth/user-not-found':
+                    errorMessage = "User not found.";
+                    break;
+                case 'auth/wrong-password':
+                    errorMessage = "Incorrect password.";
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage = "Invalid email format.";
+                    break;
+                default:
+                    errorMessage = "Error during login. Please try again.";
             }
-        });
+        } else {
+            errorMessage = err.message || "Error during login. Please try again.";
+        }
 
-        // Render the EJS template and pass the data
-        res.render('details', { test, creatingTime, emails });
-    } catch (error) {
-        console.error('Error fetching test details:', error.message);
-        res.status(500).send('Internal Server Error');
+        req.session.message = { type: 'danger', message: errorMessage };
+        return res.redirect('/');
+    }
+});
+app.get('/rank', async (req, res) => {
+    try {
+        const submissionsCollection = collection(db, "test_submissions");
+        const submissionsSnapshot = await getDocs(submissionsCollection);
+        const submissions = submissionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Calculate scores and training levels
+        const results = await Promise.all(submissions.map(async (submission) => {
+            const totalQuestions = submission.testId ? await getTotalQuestionsFromTest(submission.testId) : 0;
+            const userAnswers = Object.values(submission.answers || {});
+            const testQuestions = submission.testId ? await getTestQuestions(submission.testId) : [];
+
+            const correctCount = userAnswers.filter((answer, index) => {
+                const question = testQuestions[index];
+                return question && answer === question.correct_answer;
+            }).length;
+
+            const scorePercentage = (correctCount / totalQuestions) * 100;
+
+            let trainingLevel;
+            if (scorePercentage <= 50) {
+                trainingLevel = "Level 3 training required";
+            } else if (scorePercentage <= 70) {
+                trainingLevel = "Level 2 training required";
+            } else {
+                trainingLevel = "Level 1 training required";
+            }
+
+            // Fetch user details
+            const userSnapshot = await getDocs(query(collection(db, "users"), where("email", "==", submission.email)));
+            const userName = userSnapshot.empty ? 'Unknown' : `${userSnapshot.docs[0].data().first_name} ${userSnapshot.docs[0].data().last_name}`;
+
+            // Fetch test details
+            const testSnapshot = await getDoc(doc(db, "tests", submission.testId));
+            const testName = testSnapshot.exists() ? testSnapshot.data().test_topic : 'Unknown';
+
+            return {
+                userName,
+                testName,
+                email: submission.email,
+                score: scorePercentage.toFixed(2),
+                trainingLevel
+            };
+        }));
+
+        // Group results by testName
+        const groupedResults = results.reduce((acc, result) => {
+            if (!acc[result.testName]) {
+                acc[result.testName] = [];
+            }
+            acc[result.testName].push(result);
+            return acc;
+        }, {});
+
+        // Prepare final output with ranks
+        const finalResults = [];
+        for (const testName in groupedResults) {
+            const group = groupedResults[testName];
+            // Sort by score descending
+            group.sort((a, b) => b.score - a.score);
+            // Assign ranks
+            group.forEach((result, index) => {
+                result.rank = index + 1; // Start rank from 1
+            });
+            finalResults.push({ testName, candidates: group });
+        }
+
+        res.render('rank', { finalResults, userEmail: req.session.email, isAdmin: req.session.isAdmin });
+    } catch (err) {
+        console.error('Error fetching submissions:', err.message);
+        res.render('rank', { finalResults: [], userEmail: null, isAdmin: false });
     }
 });
 
@@ -567,16 +992,6 @@ app.get('/test-create-by-organization', async (req, res) => {
         res.status(500).send('Error fetching grouped tests');
     }
 });
-
-
-
-
-
-
-
-
-
-
 
 
 

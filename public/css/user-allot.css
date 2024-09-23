@@ -1,0 +1,113 @@
+/* CSS for Allotted Tests Page */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7f9fc;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping of test-div elements */
+    justify-content: space-between; /* Space between items */
+}
+
+.heading {
+    font-size: 2.5rem;
+    color: #333;
+    text-align: center;
+    margin-bottom: 10px;
+    width: 100%; /* Ensure heading takes full width */
+}
+
+.sub-heading {
+    font-size: 1.5rem;
+    color: #666;
+    text-align: center;
+    margin-bottom: 40px;
+    width: 100%; /* Ensure sub-heading takes full width */
+}
+
+.top-buttons {
+    display: flex;
+    justify-content: left;
+    margin-bottom: 20px;
+}
+
+.button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+.test-div {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 10px 0; /* Vertical margin for spacing between rows */
+    border-radius: 8px;
+    transition: box-shadow 0.3s ease;
+    cursor: pointer;
+    flex: 1 1 calc(50% - 20px); /* Allow two test-divs per row, considering margin */
+    margin: 10px;
+    box-sizing: border-box; /* Include padding and border in element's total width */
+}
+
+.test-div:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.test-topic {
+    font-size: 1.8rem;
+    color: #007bff;
+}
+
+.test-sub-topic {
+    font-size: 1.2rem;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.assigned-at, .assigner {
+    font-size: 1rem;
+    color: #555;
+}
+
+.email-list {
+    margin-top: 15px;
+}
+
+.email-list ul {
+    padding-left: 20px;
+}
+
+.email-list ul li {
+    font-size: 1rem;
+    color: #333;
+}
+
+.new-test-assigned {
+    color: red;
+    font-weight: bold;
+}
+
+.new-test-assigned.clicked {
+    color: green;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+    .test-div {
+        flex: 1 1 100%; /* Full width on small screens */
+        margin: 10px 0; /* Maintain vertical margin */
+    }
+}

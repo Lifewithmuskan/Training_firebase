@@ -10,30 +10,41 @@
 </head>
 <body>
     <!-- Navigation Bar -->
+    <div class="hamburger">
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      
     <nav class="main-nav">
         <div class="nav-left">
-            <img src="public\css\image\drdo.jpg" alt="Logo" class="logo">
+            <img src="https://www.prachiindia.com/img/client/inmas.png" alt="Logo" class="logo">
         </div>
         <div class="nav-center">
             <% if (isAdmin) { %>
                 <span class="clickable-span" id="create-test" onmouseover="changeToCreateTest()" onclick="window.location.href='create-test'">Create Test</span>
                 <span class="clickable-span" id="assign-test" onmouseover="changeToAssignTest()" onclick="window.location.href='assign-test'">Assign Test</span>
-            <% } else { %>
-                <span class="clickable-span" id="about" onmouseover="changeToIntroduction()" onclick="window.location.href='New-test'">Introduction</span>
+
+                <% } else { %>
+                <span class="clickable-span" id="assign-test" onmouseover="changeToAssignTest()" onclick="window.location.href='user-allot'">Assign Test</span>
+                <span class="clickable-span" id="score-test" onmouseover="changeToscoreTest()" onclick="window.location.href='rank'">Test Ranks</span>
+
+                
             <% } %>
-            <span class="clickable-span" id="about" onmouseover="changeToTestResult()" onclick="window.location.href='test-submissions'">Test Result</span>
-    
+            <span class="clickable-span" id="test-submissions" onmouseover="changeToTestResult()" onclick="window.location.href='score'">Test Result</span>
             <div class="dropdown">
                 <span class="dropdown-toggle">Sessions</span>
                 <div class="dropdown-menu">
-                    <a class="clickable-span" onclick="window.location.href='test-submissions'">Test</a>
-                    <a class="clickable-span" onclick="window.location.href='upcoming-tests'">New</a>
-                    <a href="#previous">Previous</a>
+                    <a class="clickable-span" onclick="window.location.href='upcoming-tests'">Upcoming</a>
+                    <a class="clickable-span" onclick="window.location.href='previous-tests'">Previous</a>
                 </div>
-            </div>
+            </div> 
+            
         </div>
         <div class="nav-right">
-            <a href="/" class="logout-button">Log Out</a>
+           
+            <%= email %> <a href="/" class="logout-button">Log Out</a>
+           
         </div>
     </nav>
 

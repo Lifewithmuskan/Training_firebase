@@ -6,23 +6,6 @@
     <title>Test Details</title>
     <link rel="stylesheet" href="/css/test-details-by-organization.css">
     <script src="/js/test-details.js" defer></script>
-    <style>
-        /* Add styles for the timer */
-       /* Timer Styles */
-.test-info {
-    display: flex; /* Use flexbox for alignment */
-    justify-content: space-between; /* Space items evenly */
-    align-items: center; /* Align items vertically */
-}
-
-.timer {
-    font-size: 1.2em; /* Increases font size for better visibility */
-    color: #003d82; /* Match the theme color */
-    margin-left: auto; /* Push the timer to the right */
-}
-
-        
-    </style>
 </head>
 <body>
     <section id="questions-section">
@@ -33,15 +16,12 @@
             <h3>Topic: <span class="topic"><%= topic %></span></h3>
             <h4>Subtopic: <span class="subtopic"><%= subtopic %></span></h4>
             <h4>Time Allowed: <span class="time"><%= time %> minutes</span></h4>
-            <!-- Timer Display -->
-            <div id="timer" class="timer"></div>
         </div>
 
         <form id="test-form">
             <% testContent.questions.forEach((question, index) => { %>
                 <fieldset>
                     <legend><%= question.question %></legend>
-
                     <% if (question.type === 'mcq') { %>
                         <% (question.options || []).forEach((option) => { %>
                             <label>
@@ -55,30 +35,17 @@
                 </fieldset>
             <% }) %>
             <input type="hidden" name="testId" value="<%= testId %>">
-            <button type="submit" class="submit-button">Submit Test</button>
         </form>
+
+        <!-- Buttons for Delete and Edit -->
+        <div class="action-buttons">
+            <form action="/delete-test/<%= testId %>" method="POST" style="display:inline;">
+                <button type="submit" onclick="return confirm('Are you sure you want to delete this test?');">Delete Test</button>
+            </form>
+            <form action="/edit-test/<%= testId %>" method="GET" style="display:inline;">
+                <button type="submit">Edit Test</button>
+            </form>
+        </div>
     </section>
-
-    <script>
-        // Timer Logic
-        const timeAllowed = <%= time %> * 60; // Convert minutes to seconds
-        const timerDisplay = document.getElementById('timer');
-
-        let timeRemaining = timeAllowed;
-
-        const timerInterval = setInterval(() => {
-            const minutes = Math.floor(timeRemaining / 60);
-            const seconds = timeRemaining % 60;
-
-            timerDisplay.textContent = `Time Remaining: ${minutes}m ${seconds}s`;
-
-            if (timeRemaining <= 0) {
-                clearInterval(timerInterval);
-                document.getElementById('test-form').submit(); // Automatically submit the form
-            }
-
-            timeRemaining--;
-        }, 1000);
-    </script>
 </body>
 </html>

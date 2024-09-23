@@ -11,22 +11,11 @@
     </style>
 </head>
 <body>
-    <header class="navbar">
-        <nav class="navbar">
-            <div class="navbar-left">
-                <a href="/" class="logo"><img src="/images/drdo_logo.png" alt="Logo"></a>
-            </div>
-            <div class="navbar-right">
-                <a href="#about">About</a>
-                <a href="#photos">Photos</a>
-                <a href="#contact">Contact Us</a>
-            </div>
-        </nav>
-    </header>
+  
 
     <div class="container">
         <h1 class="heading">Submission Details</h1>
-        <h2 class="sub_heading">Details of the test submission</h2>
+        <h2 class="sub_heading">Details of the Test Submission</h2>
 
         <table>
             <tr>
@@ -56,7 +45,7 @@
             <tbody>
                 <% let correctCount = 0; %>
                 <% test.questions.forEach((question, index) => { %>
-                    <% let userAnswer = submission.answers[index]; %>
+                    <% let userAnswer = submission.answers[index.toString()]; %> <!-- Convert index to string -->
                     <% let isCorrect = userAnswer === question.correct_answer; %>
                     <% if (isCorrect) { correctCount++; } %>
                     <tr class="<%= isCorrect ? 'correct' : 'incorrect' %>">
@@ -79,31 +68,16 @@
             <% let incorrectCount = totalQuestions - correctCount; %>
             <% let scorePercentage = (correctCount / totalQuestions) * 100; %>
             <p>Correct Answers: <%= correctCount %> out of <%= totalQuestions %> (<%= scorePercentage.toFixed(2) %>%)</p>
-            <% if (scorePercentage >= 0 && scorePercentage <= 50) { %>
+            <% if (scorePercentage <= 50) { %>
                 <p>Level 3 training required</p>
-            <% } else if (scorePercentage > 50 && scorePercentage <= 70) { %>
+            <% } else if (scorePercentage <= 70) { %>
                 <p>Level 2 training required</p>
-            <% } else if (scorePercentage > 70 && scorePercentage <= 100) { %>
+            <% } else { %>
                 <p>Level 1 training required</p>
             <% } %>
         </div>
     </div>
 
-    <footer class="footer">
-        <h2>Stay Updated</h2>
-        <div class="subscribeNewslettersBlock">Subscribe to our newsletter for the latest updates.</div>
-        <div class="connectUs">Follow us on social media:</div>
-        <ul class="socialLinks">
-            <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
-            <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
-            <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
-        </ul>
-        <div class="impoLinks">Important Links:</div>
-        <ul class="footerMenuLinks">
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms of Service</a></li>
-            <li><a href="#">Support</a></li>
-        </ul>
-    </footer>
+ 
 </body>
 </html>

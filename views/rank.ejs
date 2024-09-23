@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rankings</title>
+    <link rel="stylesheet" href="/css/upcoming.css">
+</head>
+<body>
+    <div class="top-buttons">
+        <a href="/home" class="button">Home</a>
+        <a href="/test-submissions" class="button">Test Submission</a>
+        <a href="/user-allot" class="button">User Allotment</a>
+    </div>
+
+    <div class="container">
+        <h1 class="heading">Candidate Rankings</h1>
+        <h2 class="sub_heading">View all candidates' scores, required training levels, and rankings</h2>
+
+        <!-- Search Box -->
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Search by name or email...">
+        </div>
+
+        <!-- Iterate through each test group -->
+        <% finalResults.forEach(group => { %>
+            <h3><%= group.testName %></h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Score (%)</th>
+                        <th>Training Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% group.candidates.forEach(candidate => { %>
+                        <tr>
+                            <td><%= candidate.rank %></td>
+                            <td><%= candidate.userName %></td>
+                            <td><%= candidate.email %></td>
+                            <td><%= candidate.score %></td>
+                            <td><%= candidate.trainingLevel %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+            <div style="margin-bottom: 10px;"></div> <!-- Add margin between groups -->
+        <% }) %>
+    </div>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('search');
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        searchInput.addEventListener('keyup', function() {
+            const filter = searchInput.value.toLowerCase();
+
+            tableRows.forEach(row => {
+                const name = row.cells[1].textContent.toLowerCase();
+                const email = row.cells[2].textContent.toLowerCase();
+                if (name.includes(filter) || email.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

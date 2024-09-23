@@ -5,23 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Submissions</title>
     <link rel="stylesheet" href="/css/upcoming.css">
+
 </head>
 <body>
     
     <div class="top-buttons">
         <a href="/home" class="button">Home</a>
-        
+        <a href="/score" class="button">Candidate Scores</a>
     </div>
 
     <div class="container">
         <h1 class="heading">Test Submissions</h1>
         <h2 class="sub_heading">Review the submitted tests</h2>
 
-        <table>
+        <!-- Search Box -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by name or email..." onkeyup="filterTable()">
+        </div>
+
+        <table id="submissionsTable">
             <thead>
                 <tr>
-                    
+                    <th>Name</th>
                     <th>Email</th>
+                    <th>Test Name</th>
                     <th>Submission Time</th>
                     <th>View Details</th>
                 </tr>
@@ -29,8 +36,9 @@
             <tbody>
                 <% submissions.forEach(submission => { %>
                     <tr onclick="window.location.href='/submission-details/<%= submission.id %>'">
-                       
+                        <td><%= submission.userInfo.first_name %> <%= submission.userInfo.last_name %></td>
                         <td><%= submission.email %></td>
+                        <td><%= submission.testInfo.test_topic || 'N/A' %></td>
                         <td><%= new Date(submission.submittedAt.toDate()).toLocaleString() %></td>
                         <td><a href="/submission-details/<%= submission.id %>">View</a></td>
                     </tr>
@@ -39,6 +47,34 @@
         </table>
     </div>
 
-   
+    <script>
+        function filterTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('submissionsTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) { // Start from 1 to skip the header row
+                const cells = rows[i].getElementsByTagName('td');
+                let rowVisible = false;
+
+                // Check each cell in the row for the search term
+                for (let j = 0; j < cells.length; j++) {
+                    const cell = cells[j];
+                    if (cell) {
+                        const textValue = cell.textContent || cell.innerText;
+                        if (textValue.toLowerCase().indexOf(filter) > -1) {
+                            rowVisible = true; // Match found
+                            break;
+                        }
+                    }
+                }
+
+                // Show or hide the row based on the search result
+                rows[i].style.display = rowVisible ? '' : 'none';
+            }
+        }
+    </script>
+
 </body>
 </html>

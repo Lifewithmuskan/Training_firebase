@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upcoming Tests</title>
+    <title>Previous Tests</title>
     <link rel="stylesheet" href="/css/upcoming.css">
 </head>
 <body>
     <div class="container">
-        <h1 class="heading">Upcoming Tests</h1>
-        <h2 class="sub_heading">Stay prepared for your future assessments</h2>
+        <h1 class="heading">Previous Tests</h1>
+        <h2 class="sub_heading">Review your past assessments</h2>
 
         <table>
             <thead>
@@ -19,9 +19,10 @@
                     <th>Time</th>
                 </tr>
             </thead>
+
             <tbody>
                 <% tests.forEach(test => { %>
-                    <tr <% if (isAdmin) { %> onclick="window.location.href='/test-details/<%= test.id %>'" <% } %>> 
+                    <tr onclick="window.location.href='/test-details/<%= test.id %>'">
                         <td><%= test.test_topic %></td>
                         <td><%= test.test_sub_topic %></td>
                         <td><%= test.test_time %> minutes</td>
