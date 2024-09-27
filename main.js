@@ -14,7 +14,7 @@ import {
     getDoc,
     doc,
     query,
-    where,setDoc,deleteDoc
+    where,setDoc,deleteDoc,updateDoc 
 } from './firebase.js';
 
 const app = express();
@@ -116,6 +116,26 @@ app.post('/delete-test/:testId', async (req, res) => {
 });
 
 
+
+app.get('/edit-test/:testId', async (req, res) => {
+    const testId = req.params.testId;
+    
+    try {
+        const testDoc = await getDoc(doc(collection(db, "tests"), testId));
+        if (!testDoc.exists()) {
+            req.session.message = { type: 'danger', message: "Test not found." };
+            return res.redirect('/upcoming-tests');
+        }
+
+        const testData = testDoc.data();
+        res.render('edit-test', { testId, testData });
+    } catch (err) {
+        console.error('Error loading test:', err.message);
+        req.session.message = { type: 'danger', message: "Error loading test. Please try again." };
+        res.redirect('/upcoming-tests');
+    }
+});
+
 app.post('/update-test/:testId', async (req, res) => {
     const testId = req.params.testId;
     const { topic, subtopic, time, questions } = req.body;
@@ -123,9 +143,9 @@ app.post('/update-test/:testId', async (req, res) => {
     try {
         const testsCollection = collection(db, "tests");
         await updateDoc(doc(testsCollection, testId), {
-            topic,
-            subtopic,
-            time,
+            test_topic: topic,
+            test_sub_topic: subtopic,
+            test_time: time,
             questions
         });
 
@@ -134,9 +154,11 @@ app.post('/update-test/:testId', async (req, res) => {
     } catch (err) {
         console.error('Error updating test:', err.message);
         req.session.message = { type: 'danger', message: "Error updating test. Please try again." };
-        res.redirect('/upcoming-tests');
+        res.redirect(`/edit-test/${testId}`);
     }
 });
+
+
 
 
 
@@ -404,7 +426,7 @@ async function getTotalQuestionsFromTest(testId) {
     const testDocRef = doc(db, "tests", testId);
     const testSnapshot = await getDoc(testDocRef);
     if (testSnapshot.exists()) {
-        const testData = testSnapshot.data();
+        const testData = testSnapshot.data();   
         return testData.questions.length; // Assuming questions is an array
     }
     return 0; // Handle case where the test doesn't exist
@@ -490,9 +512,41 @@ app.get('/test-details/:id', async (req, res) => {
 
 
 
+app.get('/questions', (req, res) => {
+    res.render('questions'); // Make sure the .ejs file is named questions.ejs
+});
+app.get('/make-test', async (req, res) => {
+    try {
+        const questionsCollection = collection(db, "questionnaire"); // Adjust the collection name as necessary
+        const questionsSnapshot = await getDocs(questionsCollection);
+        const questions = questionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Render the create-test EJS template and pass the questions
+        res.render('questions', { questions });
+    } catch (err) {
+        console.error('Error fetching questions:', err.message);
+        res.status(500).send('Error fetching questions');
+    }
+});
 
 
-// Create test page (GET)
+
+// Display Select Questions Page
+app.get('/select-questions', async (req, res) => {
+    try {
+        // Fetch tests
+        const testsCollection = collection(db, "tests");
+        const testsSnapshot = await getDocs(testsCollection);
+        const tests = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Render the EJS template and pass the data
+        res.render('select-questions', { tests });
+    } catch (err) {
+        console.error('Error fetching data for select questions:', err.message);
+        res.status(500).send('Error fetching data for select questions');
+    }
+});
+
 
 // Create test route (GET)
 app.get('/create-test', (req, res) => {
@@ -530,7 +584,8 @@ app.post('/create-test', async (req, res) => {
 
 
 app.post('/save-test', async (req, res) => {
-    const { test_topic, test_sub_topic, test_time, questions } = req.body;
+    const { test_topic, test_sub_topic, test_time, number_of_questions } = req.body;
+    const questions = req.body.questions || []; // Ensure this captures your selected questions
 
     try {
         // Reference to the tests collection in Firestore
@@ -541,18 +596,17 @@ app.post('/save-test', async (req, res) => {
             test_topic,
             test_sub_topic,
             test_time,
-            questions
+            questions: Array.isArray(questions) ? questions : [questions] // Ensure it's an array
         });
 
         // Redirect to the homepage after successful save
         res.redirect('/home');  // Replace '/home' with your actual homepage route if different
     } catch (err) {
         console.error('Error saving test:', err.message);
-        
-        // Optionally, you can redirect to an error page or show a message
         res.redirect('/error');  // Replace '/error' with your error handling route if needed
     }
 });
+
 
 app.post('/submit-test/:testId', async (req, res) => {
     const { testId } = req.params; // Comes from the URL
@@ -602,6 +656,54 @@ app.post('/submit-test/:testId', async (req, res) => {
 });
 
 
+// Example endpoint to fetch tests
+app.get('/api/tests', async (req, res) => {
+    try {
+        const testsSnapshot = await getDocs(collection(db, 'tests'));
+        const tests = testsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.json(tests);
+    } catch (error) {
+        console.error('Error fetching tests:', error);
+        res.status(500).json({ message: 'Error fetching tests' });
+    }
+});
+
+
+
+
+// Assuming you want to save questions to the "questionnaire" collection
+app.post('/sa-test', async (req, res) => {
+    const { testId } = req.body;
+    
+    try {
+        // Assuming you want to get questions from "tests" collection based on testId
+        const testRef = collection(db, 'tests'); // This gets the 'tests' collection
+        const testSnapshot = await getDocs(testRef);
+        const questions = [];
+
+        testSnapshot.forEach(doc => {
+            if (doc.id === testId) {
+                // Assuming each test document has a 'questions' field that is an array
+                questions.push(...doc.data().questions);
+            }
+        });
+
+        // Save each question to the 'questionnaire' collection
+        const questionnaireRef = collection(db, 'questionnaire');
+        for (const question of questions) {
+            await addDoc(questionnaireRef, { question });
+        }
+
+        res.status(201).json({ message: 'Questions saved successfully!' });
+    } catch (error) {
+        console.error('Error saving questions:', error);
+        res.status(500).json({ message: 'Error saving questions' });
+    }
+});
+
+  
+ 
+  
 
 
 // User registration route

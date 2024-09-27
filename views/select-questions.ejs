@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Test</title>
+    <link rel="stylesheet" href="/path/to/your/styles.css">
+</head>
+<body style="background-color: cornflowerblue;">
+
+    <header>
+        <h1>Select a Test</h1>
+    </header>
+
+    <main>
+        <form id="test-selection-form">
+            <label for="test-select">Choose a test:</label>
+            <select id="test-select" name="testId" required>
+                <option value="">--Please choose a test--</option>
+                <% tests.forEach(test => { %>
+                    <option value="<%= test.id %>"><%= test.test_topic %> - <%= test.test_sub_topic %></option>
+                <% }) %>
+            </select>
+            <button type="submit">Save Questions</button>
+        </form>
+        <div id="message"></div>
+    </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('test-selection-form');
+        const messageDiv = document.getElementById('message');
+
+        // Handle form submission
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent the form from submitting normally
+            const testId = form.testId.value; // Get the selected test ID
+
+            try {
+                const response = await fetch('/sa-test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ testId }),
+                });
+
+                const data = await response.json();
+                messageDiv.textContent = data.message;
+
+                if (response.status === 201) {
+                    console.log('Saved questions:', data.savedQuestions);
+                    form.reset(); // Reset the form after successful submission
+                }
+            } catch (error) {
+                console.error('Error saving questions:', error);
+                messageDiv.textContent = 'Error saving questions';
+            }
+        });
+    });
+    </script>
+</body>
+</html>

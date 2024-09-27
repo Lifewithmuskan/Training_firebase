@@ -7,21 +7,33 @@
     <link rel="stylesheet" href="/css/test-details-by-organization.css">
     <script src="/js/test-details.js" defer></script>
     <style>
-        /* Add styles for the timer */
-       /* Timer Styles */
-.test-info {
-    display: flex; /* Use flexbox for alignment */
-    justify-content: space-between; /* Space items evenly */
-    align-items: center; /* Align items vertically */
-}
+        /* Timer Styles */
+        .test-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.timer {
-    font-size: 1.2em; /* Increases font size for better visibility */
-    color: #003d82; /* Match the theme color */
-    margin-left: auto; /* Push the timer to the right */
-}
+        .timer {
+            font-size: 1.2em;
+            color: #003d82;
+            margin-left: auto;
+        }
 
-        
+        /* Question Number Styling */
+        fieldset {
+            position: relative;
+            padding-left: 40px; /* To provide space for the question number */
+        }
+
+        .question-number {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            font-weight: bold;
+            color: #003d82;
+        }
     </style>
 </head>
 <body>
@@ -40,6 +52,8 @@
         <form id="test-form">
             <% testContent.questions.forEach((question, index) => { %>
                 <fieldset>
+                    <!-- Question Number -->
+                    <span class="question-number"><%= index + 1 %>.</span>
                     <legend><%= question.question %></legend>
 
                     <% if (question.type === 'mcq') { %>
@@ -74,6 +88,7 @@
 
             if (timeRemaining <= 0) {
                 clearInterval(timerInterval);
+                alert("Test Submitted!!"); // Show alert when time runs out
                 document.getElementById('test-form').submit(); // Automatically submit the form
             }
 

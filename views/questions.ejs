@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make a Test</title>
+    <link rel="stylesheet" href="/path/to/your/styles.css">
+    <style>
+        /* Your existing styles */
+    </style>
+</head>
+<body style="background-color: cornflowerblue;">
+
+    <header>
+        <h1>Make a Test</h1>
+    </header>
+
+    <main>
+        <div id="questions-container">
+            <% questions.forEach(question => { %>
+                <div class="question" data-question="<%= question.id %>">
+                    <strong><%= question.question %></strong> <!-- Display question text -->
+                    <div class="options">
+                        <% if (question.options && Array.isArray(question.options)) { %>
+                            <% question.options.forEach(option => { %>
+                                <div class="option">
+                                    <input type="radio" name="question-<%= question.id %>" value="<%= option %>">
+                                    <label><%= option %></label> <!-- Display each option -->
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div>No options available for this question.</div>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+
+        <form id="questions-form" action="/save-test" method="POST"> 
+            <input type="hidden" id="hidden-topic" name="test_topic">
+            <input type="hidden" id="hidden-sub-topic" name="test_sub_topic">
+            <input type="hidden" id="hidden-time" name="test_time">
+            <input type="hidden" id="hidden-questions-count" name="number_of_questions">
+            <input type="hidden" id="hidden-date" name="test_date">
+
+            <div id="questions-list"></div>
+            <button type="submit" id="save-test" class="action-button">Save Test</button>
+        </form>
+    </main>
+
+    <script>
+    // Your existing script
+    </script>
+</body>
+</html>

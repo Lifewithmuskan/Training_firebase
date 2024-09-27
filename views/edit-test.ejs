@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Test</title>
+    <link rel="stylesheet" href="/css/edit-test.css">
+    <script>
+        // Function to delete a question
+        function deleteQuestion(index) {
+            const questionFieldset = document.getElementById(`question-${index}`);
+            if (questionFieldset) {
+                questionFieldset.remove();
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="top-buttons">
+        <a href="/home" class="button">Home</a>
+    </div>
+    <section id="edit-test-section">
+        <h2>Edit Test</h2>
+        
+        <form action="/update-test/<%= testId %>" method="POST">
+            <label for="topic">Topic:</label>
+            <input type="text" id="topic" name="topic" value="<%= testData.test_topic %>" required>
+
+            <label for="subtopic">Subtopic:</label>
+            <input type="text" id="subtopic" name="subtopic" value="<%= testData.test_sub_topic %>" required>
+
+            <label for="time">Time Allowed (in minutes):</label>
+            <input type="number" id="time" name="time" value="<%= testData.test_time %>" required>
+
+            <label for="questions">Questions:</label>
+            <div id="questions">
+                <% testData.questions.forEach((question, index) => { %>
+                    <fieldset id="question-<%= index %>">
+                        <legend>Question <%= index + 1 %>:</legend>
+                        
+                        <!-- Question text input -->
+                        <input type="text" name="questions[<%= index %>][question]" value="<%= question.question %>" required>
+
+                        <!-- Question type handling -->
+                        <% if (question.type === 'mcq') { %>
+                            <label>Options (MCQ):</label>
+                            <% question.options.forEach((option, optIndex) => { %>
+                                <input type="text" name="questions[<%= index %>][options][<%= optIndex %>]" value="<%= option %>" required>
+                            <% }) %>
+                        <% } else if (question.type === 'word') { %>
+                            <label>Answer (Word):</label>
+                            <input type="text" name="questions[<%= index %>][answer]" value="<%= question.answer %>" required>
+                        <% } %>
+
+                        <!-- Delete button for each question -->
+                        <button type="button" onclick="deleteQuestion(<%= index %>)">Delete Question</button>
+                    </fieldset>
+                <% }) %>
+            </div>
+
+            <button type="submit">Update Test</button>
+        </form>
+    </section>
+</body>
+
+</html>
